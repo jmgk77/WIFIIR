@@ -12,41 +12,6 @@ ESP8266HTTPUpdateServer httpUpdater;
 #define DEBUG 1
 
 /*
-██╗   ██╗████████╗██╗██╗
-██║   ██║╚══██╔══╝██║██║
-██║   ██║   ██║   ██║██║
-██║   ██║   ██║   ██║██║
-╚██████╔╝   ██║   ██║███████╗
- ╚═════╝    ╚═╝   ╚═╝╚══════╝
-*/
-
-void info()
-{
-#ifdef DEBUG
-  Serial.println("ESP8266 INFO");
-  Serial.printf("\tESP.getResetReason()\t%s\n", ESP.getResetReason().c_str());
-  Serial.printf("\tESP.getFreeHeap()\t%d\n", ESP.getFreeHeap());
-  Serial.printf("\tESP.getHeapFragmentation()\t%d\n", ESP.getHeapFragmentation());
-  Serial.printf("\tESP.getMaxFreeBlockSize()\t%d\n", ESP.getMaxFreeBlockSize());
-  Serial.printf("\tESP.getChipId()\t%d\n", ESP.getChipId());
-  Serial.printf("\tESP.getCoreVersion()\t%s\n", ESP.getCoreVersion().c_str());
-  Serial.printf("\tESP.getSdkVersion()\t%s\n", ESP.getSdkVersion());
-  Serial.printf("\tESP.getCpuFreqMHz()\t%d\n", ESP.getCpuFreqMHz());
-  Serial.printf("\tESP.getSketchSize()\t%d\n", ESP.getSketchSize());
-  Serial.printf("\tESP.getFreeSketchSpace()\t%d\n", ESP.getFreeSketchSpace());
-  Serial.printf("\tESP.getSketchMD5()\t%s\n", ESP.getSketchMD5().c_str());
-  Serial.printf("\tESP.getFlashChipId()\t%d\n", ESP.getFlashChipId());
-  Serial.printf("\tESP.getFlashChipSize()\t%d\n", ESP.getFlashChipSize());
-  Serial.printf("\tESP.getFlashChipRealSize()\t%d\n", ESP.getFlashChipRealSize());
-  Serial.printf("\tESP.getFlashChipSpeed()\t%u\n", (unsigned int)ESP.getFlashChipSpeed);
-  Serial.printf("\tESP.getCycleCount()\t%d\n", ESP.getCycleCount());
-  Serial.printf("\tESP.random()\t%d\n", ESP.random());
-  Serial.printf("\tESP.checkFlashCRC()\t%s\n", ESP.checkFlashCRC() ? "OK" : "NOK");
-  Serial.printf("\tESP.getVcc()\t%d\n", ESP.getVcc());
-#endif
-}
-
-/*
 ██╗    ██╗██╗    ██╗██╗    ██╗    ██╗  ██╗ █████╗ ███╗   ██╗██████╗ ██╗     ███████╗██████╗ ███████╗
 ██║    ██║██║    ██║██║    ██║    ██║  ██║██╔══██╗████╗  ██║██╔══██╗██║     ██╔════╝██╔══██╗██╔════╝
 ██║ █╗ ██║██║ █╗ ██║██║ █╗ ██║    ███████║███████║██╔██╗ ██║██║  ██║██║     █████╗  ██████╔╝███████╗
@@ -55,36 +20,100 @@ void info()
  ╚══╝╚══╝  ╚══╝╚══╝  ╚══╝╚══╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝
 */
 
+const char *html_header = "\
+<!DOCTYPE html>\
+<html>\
+<head>\
+<title>WIFIIR</title>\
+<meta charset='UTF-8'/>\
+<link rel='shortcut icon' href='data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAABmJLR0QA/wD/AP+gvaeTAAABoklEQVRIie3UvWsUURQF8F+2VEyKsJgIiokRApZa+VGIKVRSmVJtAgr6B1gEO/VvsLDWNkbUCKKFhbZpwoYIClZ20WiXj7WYu8zsM7M7E6JVDlyYefecc997986wj11ioE9+FNO4gFM4hqHI/cQ3LOMDXuJ73Q1cwiI20a4Ym3iFi1UKnMCbGuZlsRheO+Iq1hLBFj5iTnZ9EzgYcTLW5vApuEXtOq6nRe4lxC087bWrHTCBZ4nPNu53COOx0El+wemCwRHclV1HC78jWniNO8Hp4Ex4FIsdh0HZtLTxFsMhGMFjbOjfk43gHg7tcHi1w/tQZxdNnEcj3q/gR4UCaazhcng0wrOpBLP+Huv3uIVJ+TBM4nbk0jGfLTMv4rPufk1V0Ezha0G3WqXQwyC/kx97FI+whF8RS8EdCU5TfroHVQrBgcLzzTAu68s6bpRoK2NG9+iXxTau9TJq9ErinPzH2wqzoYgZrERuAGdrHqILR/ECT2TfW4rByC0Ed88wHqbPMbaXxikW5H2ZryPs16MU7Zr8XWNMdpJ5//jq9vH/8QdSN6mUF/XpPQAAAABJRU5ErkJggg==' />\
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css'>\
+<meta name='viewport' content='width=device-width, initial-scale=1'>\
+</head>\
+<body>\
+<header class='sticky'>\
+<div class='card warning' style='width: 80%;margin: 0 auto;'>\
+<div class='row'>\
+<p style='width: 80%;margin: 0 auto;'>WIFIIR - Controle remoto IR via WIFI</p>\
+</div>\
+</div>\
+</header>";
+
+const char *html_footer = "\
+<footer class='sticky'>\
+<label for='drawer-control' class='drawer-toggle'></label>\
+<input type='checkbox' id='drawer-control' class='drawer'>\
+<nav>\
+<label for='drawer-control' class='drawer-close'></label>\
+<a class='doc' href='/controle'>Controle</a><br>\
+<a class='doc' href='/add'>Adicionar</a><br>\
+<a class='doc' href='/reset'>Resetar</a><br>\
+<a class='doc' href='/update'>Update firmware</a><br>\
+</nav>\
+</footer>\
+</body>\
+</html>";
+
+void send_html(const char *h)
+{
+  char *r = (char *)malloc(2048);
+  strcpy(r, html_header);
+  strcat(r, h);
+  strcat(r, html_footer);
+  server.send(200, "text/html", r);
+  free(r);
+}
+
 void handle_reset()
 {
-#ifdef DEBUG
-  Serial.println("Reseting...");
-#endif
-  server.send(200, "text/plain", "Reseting...");
+  send_html("<input type='button' value='Really Reset' onclick='location.href=\"/reset2\"'>");
+}
+
+void handle_reset2()
+{
+  send_html("<p>Reseting...</p>");
   wm.resetSettings();
-  ESP.restart();
+  delay(1000);
+  wm.reboot();
+  delay(2000);
 }
 
 void handle_root()
 {
-#ifdef DEBUG
-  Serial.println("Main...");
-#endif
-  server.send(200, "text/plain", "Main...");
+  //###
+  send_html("<p>Main...</p>");
+}
+
+void handle_add()
+{
+  //###
+  send_html("<br><br><br><p>There's so much room for activities!</p><br><br><br>");
+}
+
+void handle_update()
+{
+  send_html("<br><br><br>\
+<form method='POST' action='/update2' enctype='multipart/form-data'>\
+Firmware:<br>\
+<input type='file' accept='.bin,.bin.gz' name='firmware'>\
+<input type='submit' value='Update Firmware'>\
+</form>\
+<br><br><br>");
 }
 
 void handle_404()
 {
-#ifdef DEBUG
-  Serial.println("Not found...");
-#endif
-  server.send(200, "text/plain", "404...");
+  send_html("<p>Not found!</p>");
 }
 
 void install_www_handlers()
 {
-  server.on("/reset", handle_reset);
   server.on("/", handle_root);
+  server.on("/controle", handle_root);
+  server.on("/add", handle_add);
+  server.on("/reset", handle_reset);
+  server.on("/reset2", handle_reset2);
+  server.on("/update", handle_update);
   server.onNotFound(handle_404);
 }
 
@@ -104,8 +133,6 @@ void setup()
   Serial.begin(115200);
   Serial.println("");
   Serial.println("WIFIIR - Starting");
-
-  info();
 
 #ifdef DEBUG
   Serial.setDebugOutput(true);
@@ -131,7 +158,7 @@ void setup()
   }
 
   MDNS.begin("WIFIIR");
-  httpUpdater.setup(&server);
+  httpUpdater.setup(&server, "/update2");
 
   install_www_handlers();
 
