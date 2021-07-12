@@ -1,3 +1,9 @@
+//WIFIIR - Controlador IR via internet
+//
+//(c) JMGK 2021
+
+#define DEBUG 1
+
 #include <Arduino.h>
 
 #include <WiFiManager.h>
@@ -9,7 +15,13 @@ WiFiManager wm;
 ESP8266WebServer server;
 ESP8266HTTPUpdateServer httpUpdater;
 
-#define DEBUG 1
+bool decoding_onoff;
+
+//led blink vars
+#define LED_BLINK_INTERVAL 500
+#define LED_PIN D5
+unsigned long old_millis = 0;
+int led_status = LOW;
 
 /*
 ██╗    ██╗██╗    ██╗██╗    ██╗    ██╗  ██╗ █████╗ ███╗   ██╗██████╗ ██╗     ███████╗██████╗ ███████╗
@@ -66,7 +78,7 @@ void send_html(const char *h)
 
 void handle_reset()
 {
-  send_html("<input type='button' value='Really Reset' onclick='location.href=\"/reset2\"'>");
+  send_html("<input type='button' value='Factory Reset' onclick='location.href=\"/reset2\"'>");
 }
 
 void handle_reset2()
@@ -80,14 +92,76 @@ void handle_reset2()
 
 void handle_root()
 {
-  //###
+  //###list codes
   send_html("<p>Main...</p>");
 }
 
 void handle_add()
 {
-  //###
-  send_html("<br><br><br><p>There's so much room for activities!</p><br><br><br>");
+  String button;
+  button = "";
+  if (server.hasArg("button"))
+  {
+    button = server.arg("button");
+  }
+  char *r = (char *)malloc(2048);
+  //###warning if 'button' exists
+  strcpy(r, "<br><br><br>\
+<form action='/save' method='get'>\
+<p>1. Entre o nome do botão que você quer adicionar</p>\
+<p>2. Espere a luz do WIFIIR começar a piscar</p>\
+<p>3. Aperte o botão no controle até a luz desligar</p>\
+<p>4. Clique em ADICIONAR abaixo</p>\
+<input type='text' name='button' value='");
+  strcat(r, button.c_str());
+  strcat(r, "'>\
+<input type='submit' value='Submit'>\
+<br><br><br>\
+<\form>");
+  send_html(r);
+  free(r);
+  //inicia leitor de IR
+  decoding_onoff = true;
+}
+
+void handle_save()
+{
+  String button;
+  button = "";
+  if (server.hasArg("button"))
+  {
+    button = server.arg("button");
+  }
+  if ((decoding_onoff) || (button.isEmpty()))
+  {
+#ifdef DEBUG
+    Serial.print("SAVE::redirecting back to ADD");
+    if (decoding_onoff)
+    {
+      Serial.print("::without code");
+    }
+    if (button.isEmpty())
+    {
+      Serial.print("::empty button name");
+    }
+    Serial.println();
+#endif
+    //redirect to /add with "button" as param
+    char *r = (char *)malloc(2048);
+    strcpy(r, "<script>document.location.href = '/add");
+    if (!button.isEmpty())
+    {
+      strcat(r, "?button=");
+      strcat(r, button.c_str());
+    }
+    strcat(r, "'</script>");
+    send_html(r);
+    free(r);
+  }
+  else
+  {
+    //###save code->button
+  }
 }
 
 void handle_update()
@@ -111,6 +185,7 @@ void install_www_handlers()
   server.on("/", handle_root);
   server.on("/controle", handle_root);
   server.on("/add", handle_add);
+  server.on("/save", handle_save);
   server.on("/reset", handle_reset);
   server.on("/reset2", handle_reset2);
   server.on("/update", handle_update);
@@ -164,6 +239,12 @@ void setup()
 
   server.begin();
   MDNS.addService("http", "tcp", 80);
+
+  //blinking LED setup
+  decoding_onoff = false;
+  pinMode(LED_PIN, OUTPUT);
+  led_status = LOW;
+  digitalWrite(LED_PIN, led_status);
 }
 
 /*
@@ -179,4 +260,18 @@ void loop()
 {
   server.handleClient();
   MDNS.update();
+
+  //lendo codigo?
+  if (decoding_onoff)
+  {
+    //pisca led
+    if ((millis() - old_millis) > LED_BLINK_INTERVAL)
+    {
+      old_millis = millis();
+      led_status = (led_status == HIGH) ? LOW : HIGH;
+      digitalWrite(LED_PIN, led_status);
+    }
+    //decode
+    //###decode
+  }
 }
