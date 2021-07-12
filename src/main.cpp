@@ -117,7 +117,7 @@ void handle_add()
   strcat(r, "'>\
 <input type='submit' value='Submit'>\
 <br><br><br>\
-<\form>");
+</form>");
   send_html(r);
   free(r);
   //inicia leitor de IR
