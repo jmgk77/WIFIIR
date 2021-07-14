@@ -2,6 +2,8 @@
 //
 //(c) JMGK 2021
 
+//###irsend.send(protocol, results.value, size);
+
 #define DEBUG 1
 
 #include <Arduino.h>
@@ -11,6 +13,8 @@
 #include <ESP8266HTTPUpdateServer.h>
 #include <ESP8266mDNS.h>
 
+#include <LittleFS.h>
+
 #include <IRrecv.h>
 
 //irRecv vars
@@ -19,6 +23,18 @@ const uint16_t kCaptureBufferSize = 1024;
 const uint8_t kTimeout = 50;
 IRrecv irrecv(kRecvPin, kCaptureBufferSize, kTimeout, false);
 bool irin_enable = false;
+
+//
+typedef struct
+{
+  char name[64];
+  decode_type_t protocol;
+  uint16_t size;
+  uint64_t value;
+} IrResult;
+IrResult irresult;
+
+std::vector<IrResult> ir_codes;
 
 decode_results results;
 
@@ -33,6 +49,118 @@ bool decoding_onoff;
 #define LED_PIN D5
 unsigned long old_millis = 0;
 int led_status = LOW;
+
+/*
+██████╗ ███████╗██████╗ ███████╗██╗███████╗████████╗ █████╗ ███╗   ██╗ ██████╗███████╗
+██╔══██╗██╔════╝██╔══██╗██╔════╝██║██╔════╝╚══██╔══╝██╔══██╗████╗  ██║██╔════╝██╔════╝
+██████╔╝█████╗  ██████╔╝███████╗██║███████╗   ██║   ███████║██╔██╗ ██║██║     █████╗
+██╔═══╝ ██╔══╝  ██╔══██╗╚════██║██║╚════██║   ██║   ██╔══██║██║╚██╗██║██║     ██╔══╝
+██║     ███████╗██║  ██║███████║██║███████║   ██║   ██║  ██║██║ ╚████║╚██████╗███████╗
+╚═╝     ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝╚══════╝
+*/
+
+#ifdef DEBUG
+void _hexdump(void *ptr, int buflen)
+{
+  unsigned char *buf = (unsigned char *)ptr;
+  int i, j;
+  char s[128];
+  for (i = 0; i < buflen; i += 16)
+  {
+    sprintf(s, "%06x: ", i);
+    Serial.print(s);
+    for (j = 0; j < 16; j++)
+      if (i + j < buflen)
+      {
+        sprintf(s, "%02x ", buf[i + j]);
+        Serial.print(s);
+      }
+      else
+      {
+        sprintf(s, "   ");
+        Serial.print(s);
+      }
+    sprintf(s, " ");
+    Serial.print(s);
+    for (j = 0; j < 16; j++)
+      if (i + j < buflen)
+        sprintf(s, "%c", isprint(buf[i + j]) ? buf[i + j] : '.');
+    {
+      Serial.print(s);
+    }
+    sprintf(s, "\n");
+    Serial.print(s);
+  }
+}
+#endif
+
+void codes_load()
+{
+#ifdef DEBUG
+  Serial.println("read config...");
+#endif
+  File f = LittleFS.open("/codes.bin", "r");
+  if (f)
+  {
+    IrResult tmp;
+    int size = f.size();
+    for (int i = 0; i < size; i += sizeof(IrResult))
+    {
+      f.read((uint8_t *)&tmp, sizeof(IrResult));
+#ifdef DEBUG
+      Serial.println(tmp.name);
+      Serial.println(tmp.protocol);
+      Serial.println(tmp.size);
+      Serial.println(tmp.value);
+      _hexdump((void *)&tmp, sizeof(IrResult));
+#endif
+      ir_codes.push_back(tmp);
+    }
+  }
+  else
+  {
+#ifdef DEBUG
+    Serial.println("file open failed (read)");
+#endif
+  }
+}
+
+void codes_save()
+{
+#ifdef DEBUG
+  Serial.println("write config...");
+#endif
+  File f = LittleFS.open("/codes.bin", "w");
+  if (f)
+  {
+    //para cada entrada...
+    for (auto i = ir_codes.cbegin(); i != ir_codes.cend(); ++i)
+    {
+      IrResult tmp;
+
+      //copy struct
+      strcpy(tmp.name, (*i).name);
+      tmp.protocol = (*i).protocol;
+      tmp.size = (*i).size;
+      tmp.value = (*i).value;
+#ifdef DEBUG
+      Serial.println(tmp.name);
+      Serial.println(tmp.protocol);
+      Serial.println(tmp.size);
+      Serial.println(tmp.value);
+      _hexdump((void *)&tmp, sizeof(IrResult));
+#endif
+      f.write((const uint8_t *)&tmp, sizeof(IrResult));
+    }
+    f.close();
+  }
+  else
+  {
+#ifdef DEBUG
+    Serial.println("file open failed (write)");
+#endif
+  }
+}
 
 /*
 ██╗    ██╗██╗    ██╗██╗    ██╗    ██╗  ██╗ █████╗ ███╗   ██╗██████╗ ██╗     ███████╗██████╗ ███████╗
@@ -155,7 +283,6 @@ void handle_save()
   {
     button = server.arg("button");
   }
-  //###error if 'button' exists
   if ((decoding_onoff) || (button.isEmpty()))
   {
 #ifdef DEBUG
@@ -192,7 +319,11 @@ void handle_save()
   }
   else
   {
-    //###save code->button
+    //save button info
+    strncpy(irresult.name, button.c_str(), sizeof(irresult.name) - 1);
+    ir_codes.push_back(irresult);
+    codes_save();
+
     send_html("<div class='card warning'>Botão Salvo!</div>");
   }
 }
@@ -278,6 +409,15 @@ void setup()
   pinMode(LED_PIN, OUTPUT);
   led_status = LOW;
   digitalWrite(LED_PIN, led_status);
+
+  //carrega botões salvos
+  if (!LittleFS.begin())
+  {
+#ifdef DEBUG
+    Serial.println("An Error has occurred while mounting LittleFS");
+#endif
+  }
+  codes_load();
 }
 
 /*
@@ -314,17 +454,14 @@ void loop()
     //decode
     if (irrecv.decode(&results))
     {
-      //salva codigo
-      decode_type_t protocol = results.decode_type;
-      uint16_t size = results.bits;
-      uint64_t value = results.value;
-      //###salva
-
-      //irsend.send(protocol, results.value, size);
+      //salva codigos
+      irresult.protocol = results.decode_type;
+      irresult.size = results.bits;
+      irresult.value = results.value;
 
 #ifdef DEBUG
       String s;
-      switch (protocol)
+      switch (irresult.protocol)
       {
       case UNKNOWN:
         s = "UNKNOWN";
@@ -647,9 +784,9 @@ void loop()
       Serial.print("PROTOCOL: ");
       Serial.println(s.c_str());
       Serial.print("VALUE: ");
-      Serial.println(value);
+      Serial.println(irresult.value);
       Serial.print("SIZE: ");
-      Serial.println(size);
+      Serial.println(irresult.size);
 #endif
 
       //captura feita
