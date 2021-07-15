@@ -84,10 +84,10 @@ void _hexdump(void *ptr, int buflen)
     Serial.print(s);
     for (j = 0; j < 16; j++)
       if (i + j < buflen)
+      {
         sprintf(s, "%c", isprint(buf[i + j]) ? buf[i + j] : '.');
-    {
-      Serial.print(s);
-    }
+        Serial.print(s);
+      }
     sprintf(s, "\n");
     Serial.print(s);
   }
@@ -137,6 +137,7 @@ void codes_save()
     for (auto i = ir_codes.cbegin(); i != ir_codes.cend(); ++i)
     {
       IrResult tmp;
+      memset(&tmp, 0, sizeof(IrResult));
 
       //copy struct
       strcpy(tmp.name, (*i).name);
@@ -198,8 +199,7 @@ const char *html_footer = "\
 <label for='drawer-control' class='drawer-close'></label>\
 <a class='doc' href='/controle'>Controle</a><br>\
 <a class='doc' href='/add'>Adicionar</a><br>\
-<a class='doc' href='/reset'>Resetar</a><br>\
-<a class='doc' href='/update'>Update firmware</a><br>\
+<a class='doc' href='/config'>Configurações</a><br>\
 </nav>\
 </footer>\
 </body>\
@@ -213,20 +213,6 @@ void send_html(const char *h)
   strcat(r, html_footer);
   server.send(200, "text/html", r);
   free(r);
-}
-
-void handle_reset()
-{
-  send_html("<input type='button' value='Factory Reset' onclick='location.href=\"/reset2\"'>");
-}
-
-void handle_reset2()
-{
-  send_html("<p>Reseting...</p>");
-  wm.resetSettings();
-  delay(1000);
-  wm.reboot();
-  delay(2000);
 }
 
 void handle_root()
@@ -266,7 +252,7 @@ void handle_add()
 <input type='text' name='button' value='");
   strcat(r, button.c_str());
   strcat(r, "'>\
-<input type='submit' value='Submit'>\
+<input type='submit' value='Salvar'>\
 <br><br><br>\
 </form>");
   send_html(r);
@@ -328,15 +314,39 @@ void handle_save()
   }
 }
 
-void handle_update()
+void handle_config()
 {
   send_html("<br><br><br>\
-<form method='POST' action='/update2' enctype='multipart/form-data'>\
-Firmware:<br>\
+<form action='/delete' method='get'>\
+Limpar botões salvos:<br>\
+<input type='submit' value='Limpar'>\
+</form>\
+<form action='/reset' method='get'>\
+Limpar configurações WIFI:<br>\
+<input type='submit' value='Limpar'>\
+</form>\
+<form method='POST' action='/update' enctype='multipart/form-data'>\
+Atualizar Firmware:<br>\
 <input type='file' accept='.bin,.bin.gz' name='firmware'>\
 <input type='submit' value='Update Firmware'>\
 </form>\
 <br><br><br>");
+}
+
+void handle_delete()
+{
+  ir_codes.clear();
+  LittleFS.remove("/codes.bin");
+  send_html("<p>Botões limpos</p>");
+}
+
+void handle_reset()
+{
+  send_html("<p>Reseting...</p>");
+  wm.resetSettings();
+  delay(1000);
+  wm.reboot();
+  delay(2000);
 }
 
 void handle_404()
@@ -351,8 +361,8 @@ void install_www_handlers()
   server.on("/add", handle_add);
   server.on("/save", handle_save);
   server.on("/reset", handle_reset);
-  server.on("/reset2", handle_reset2);
-  server.on("/update", handle_update);
+  server.on("/config", handle_config);
+  server.on("/delete", handle_delete);
   server.onNotFound(handle_404);
 }
 
@@ -397,7 +407,7 @@ void setup()
   }
 
   MDNS.begin("WIFIIR");
-  httpUpdater.setup(&server, "/update2");
+  httpUpdater.setup(&server, "/update");
 
   install_www_handlers();
 
@@ -417,6 +427,14 @@ void setup()
     Serial.println("An Error has occurred while mounting LittleFS");
 #endif
   }
+
+#ifdef DEBUG
+  FSInfo fs_info;
+  LittleFS.info(fs_info);
+  Serial.printf("FS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\nmaxOpenFiles: %d\nmaxPathLength: %d\n",
+                fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
+#endif
+
   codes_load();
 }
 
