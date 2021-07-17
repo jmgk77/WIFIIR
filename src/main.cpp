@@ -2,8 +2,6 @@
 //
 //(c) JMGK 2021
 
-//###irsend.send(protocol, results.value, size);
-
 #define DEBUG 1
 
 #ifndef DEBUG
@@ -589,16 +587,15 @@ void send_html(const char *h)
   strcat(r, html_footer);
   server.send(200, "text/html", r);
 #ifdef DEBUG
-  Serial.printf("send(%d)\n", strlen(r));
+  Serial.println(r);
 #endif
   free(r);
 }
 
 void handle_root()
 {
-  char *r = (char *)_malloc(32 + (ir_codes.size() * 192));
-  strcpy(r, "<table><tbody>");
-  //<caption>WIFIIR</caption><thead><tr><th>Name</th><th>Button</th></tr></thead>
+  char *r = (char *)_malloc(96 + (ir_codes.size() * 304) + 16);
+  strcpy(r, "<table><tbody><thead><tr><th>Name</th><th>Button</th><th>Delete</th></tr></thead>");
   char n[8];
   int c = 0;
   for (auto i = ir_codes.cbegin(); i != ir_codes.cend(); ++i)
@@ -609,9 +606,11 @@ void handle_root()
     strcat(r, (*i).name);
     strcat(r, "</td><td data-label='Button'>");
     //index
-    strcat(r, "<input type='button' value='PRESS' onclick='location.href=/press?button=");
+    strcat(r, "<input type='button' value='PRESS' onclick='window.location.href=\"/press?button=");
     strcat(r, n);
-    strcat(r, ";'/></td></tr>");
+    strcat(r, "\";'/></td><td data-label='Delete'><input type='button' value='DELETE' onclick='window.location.href=\"/del?button=");
+    strcat(r, n);
+    strcat(r, "\";'/></td></tr>");
     c++;
   }
   strcat(r, "</tbody></table>");
@@ -629,10 +628,6 @@ void handle_add()
   }
   char *r = (char *)_malloc(512);
   r[0] = 0;
-  if (server.hasArg("used"))
-  {
-    strcat(r, "<div class='card error'>Nome do botão já em uso</div>");
-  }
   if (server.hasArg("empty"))
   {
     strcat(r, "<div class='card error'>Preencha o nome do botão</div>");
@@ -695,14 +690,38 @@ void handle_save()
     strncpy(irresult.name, button.c_str(), sizeof(irresult.name) - 1);
     ir_codes.push_back(irresult);
     codes_save();
-    send_html("<div class='card warning'>Botão Salvo!</div>");
+    send_html("<div class='card warning'>Botão Salvo!</div><script>setTimeout(function (){document.location.href = '/controle';}, 500);</script>");
   }
+}
+
+void handle_press()
+{
+  int button;
+  if (server.hasArg("button"))
+  {
+    button = atoi(server.arg("button").c_str());
+    auto i = ir_codes.begin() + button;
+    //###irsend.send((*i).protocol, (*i).value, (*i).size);
+  }
+  send_html("<div class='card warning'>Botão enviado!</div><script>setTimeout(function (){document.location.href = '/controle';}, 500);</script>");
+}
+
+void handle_del()
+{
+  int button;
+  if (server.hasArg("button"))
+  {
+    button = atoi(server.arg("button").c_str());
+    ir_codes.erase(ir_codes.begin() + button);
+    codes_save();
+  }
+  send_html("<div class='card warning'>Botão deletado!</div><script>setTimeout(function (){document.location.href = '/controle';}, 500);</script>");
 }
 
 void handle_config()
 {
   send_html("<br><br><br>\
-<form action='/delete' method='get'>\
+<form action='/clear' method='get'>\
 Limpar botões salvos:<br>\
 <input type='submit' value='Limpar'>\
 </form>\
@@ -718,11 +737,11 @@ Atualizar Firmware:<br>\
 <br><br><br>");
 }
 
-void handle_delete()
+void handle_clear()
 {
   ir_codes.clear();
   LittleFS.remove("/codes.bin");
-  send_html("<p>Botões limpos</p>");
+  send_html("<div class='card warning'>Botões limpos</div><script>setTimeout(function (){document.location.href = '/controle';}, 500);</script>");
 }
 
 void handle_reset()
@@ -744,10 +763,12 @@ void install_www_handlers()
   server.on("/", handle_root);
   server.on("/controle", handle_root);
   server.on("/add", handle_add);
+  server.on("/press", handle_press);
+  server.on("/del", handle_del);
   server.on("/save", handle_save);
   server.on("/reset", handle_reset);
   server.on("/config", handle_config);
-  server.on("/delete", handle_delete);
+  server.on("/clear", handle_clear);
   server.onNotFound(handle_404);
 }
 
