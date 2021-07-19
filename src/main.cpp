@@ -17,7 +17,11 @@
 
 #include <LittleFS.h>
 
+#include <IRsend.h>
 #include <IRrecv.h>
+
+const uint16_t kIrLedPin = D2;
+IRsend irsend(kIrLedPin);
 
 //irRecv vars
 const uint16_t kRecvPin = D7;
@@ -579,6 +583,20 @@ const char *html_footer = "\
 </body>\
 </html>";
 
+const char *html_css = "\
+<style>\
+.wifi, .wifi:focus, .wifi:hover {\
+background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQflBxMQGDNbPF7PAAAA7klEQVQoz5XRPUuCAQDE8d+jUgRGWImbNFj2EEEIDS1NCdHiEkV9nfCrFEWLSwQ1tTi0BCFPL0u0iWEEQihqTVKUFd12x3+5O/5Q8MUl0PX2HUhaEJo2go4nkZrWABi1ZlnDtUctJGUtSrt0rh3I2vGsoi5txiSaHjRklKQcBPacuRBal1TXxKSMllORVcXAlBeb5py40jOGV3FLNtw5NhFg1oojI4ry4ui5daZjS9V9gJi+ebtqqhpIW7Fg342Y/qBuQR7k5EBeYdhQ20JEDoevmlI2Lqks9REmPgFtXSG62j99ESqhIvrtvMD/9A6R0TwXv22H+QAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMS0wNy0xOVQxNjoyNDoyNSswMDowMHcnQy4AAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjEtMDctMTlUMTY6MjQ6MjUrMDA6MDAGevuSAAAAAElFTkSuQmCC');\
+background-repeat: no-repeat;\
+background-color: #f8f8f8;\
+}\
+.trash, .trash:focus, .trash:hover {\
+background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQflBxMQGDNbPF7PAAAA40lEQVQoz43RvU4CYRCF4Wd1WaJBIo00NhSa0EinlfRejom34S14F8TEzlKjrSbGgoLEn8TChg27LJ+FwLKGwlNMMfPOmclMZKHIuYaxSNuVpzLNoWOZHadu5GaObLkTq7n3EiN14trI87zpDew6c0uMkVcPPlW158CIDRDUtfTR1UVfS13gFwgKsaYeOjroaYoVwsIhVxMEVmJNvnBgKvFXiWkJ5GuBvAqESjlUgWytQ/avETGYSOZnj5YPSExKILdtbMj8nkNjibQEUvu+DPAIBmYa3i0t2y58K1Y22NR06YMfisxC2gggFqAAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjEtMDctMTlUMTY6MjQ6MjUrMDA6MDB3J0MuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIxLTA3LTE5VDE2OjI0OjI1KzAwOjAwBnr7kgAAAABJRU5ErkJggg==');\
+background-repeat: no-repeat;\
+background-color: #f8f8f8;\
+}\
+</style>";
+
 void send_html(const char *h)
 {
   char *r = (char *)_malloc(strlen(h) + strlen(html_header) + strlen(html_footer) + 16);
@@ -594,8 +612,9 @@ void send_html(const char *h)
 
 void handle_root()
 {
-  char *r = (char *)_malloc(96 + (ir_codes.size() * 304) + 16);
-  strcpy(r, "<table><tbody><thead><tr><th>Name</th><th>Button</th><th>Delete</th></tr></thead>");
+  char *r = (char *)_malloc(strlen(html_css) + 81 + (ir_codes.size() * 301) + 16);
+  strcpy(r, html_css);
+  strcat(r, "<table><tbody><thead><tr><th>Name</th><th>Button</th><th>Delete</th></tr></thead>");
   char n[8];
   int c = 0;
   for (auto i = ir_codes.cbegin(); i != ir_codes.cend(); ++i)
@@ -604,11 +623,9 @@ void handle_root()
     strcat(r, "<tr><td data-label='Name'>");
     //name
     strcat(r, (*i).name);
-    strcat(r, "</td><td data-label='Button'>");
-    //index
-    strcat(r, "<input type='button' value='PRESS' onclick='window.location.href=\"/press?button=");
+    strcat(r, "</td><td data-label='Button'><input class='wifi' type='button' onclick='window.location.href=\"/press?button=");
     strcat(r, n);
-    strcat(r, "\";'/></td><td data-label='Delete'><input type='button' value='DELETE' onclick='window.location.href=\"/del?button=");
+    strcat(r, "\";'/></td><td data-label='Delete'><input type='button' class='trash' onclick='window.location.href=\"/del?button=");
     strcat(r, n);
     strcat(r, "\";'/></td></tr>");
     c++;
@@ -636,8 +653,7 @@ void handle_add()
   {
     strcat(r, "<div class='card error'>Erro na leitura do botão</div>");
   }
-  strcat(r, "<br><br><br>\
-<form action='/save' method='get'>\
+  strcat(r, "<form action='/save' method='get'>\
 <p>1. Entre o nome do botão que você quer adicionar</p>\
 <p>2. Espere a luz do WIFIIR começar a piscar</p>\
 <p>3. Aperte o botão no controle até a luz desligar</p>\
@@ -646,7 +662,6 @@ void handle_add()
   strcat(r, button.c_str());
   strcat(r, "'>\
 <input type='submit' value='Salvar'>\
-<br><br><br>\
 </form>");
   send_html(r);
   free(r);
@@ -701,7 +716,7 @@ void handle_press()
   {
     button = atoi(server.arg("button").c_str());
     auto i = ir_codes.begin() + button;
-    //###irsend.send((*i).protocol, (*i).value, (*i).size);
+    irsend.send((*i).protocol, (*i).value, (*i).size);
   }
   send_html("<div class='card warning'>Botão enviado!</div><script>setTimeout(function (){document.location.href = '/controle';}, 500);</script>");
 }
@@ -720,8 +735,7 @@ void handle_del()
 
 void handle_config()
 {
-  send_html("<br><br><br>\
-<form action='/clear' method='get'>\
+  send_html("<form action='/clear' method='get'>\
 Limpar botões salvos:<br>\
 <input type='submit' value='Limpar'>\
 </form>\
@@ -733,8 +747,7 @@ Limpar configurações WIFI:<br>\
 Atualizar Firmware:<br>\
 <input type='file' accept='.bin,.bin.gz' name='firmware'>\
 <input type='submit' value='Update Firmware'>\
-</form>\
-<br><br><br>");
+</form>");
 }
 
 void handle_clear()
@@ -839,6 +852,8 @@ void setup()
   dump_fs();
 
   codes_load();
+
+  irsend.begin();
 }
 
 /*
