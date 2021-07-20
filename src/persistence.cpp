@@ -12,7 +12,7 @@
 void codes_load()
 {
 #ifdef DEBUG
-  Serial.println("read config...");
+  Serial.println("read codes...");
 #endif
   File f = LittleFS.open("/codes.bin", "r");
   if (f)
@@ -40,7 +40,7 @@ void codes_load()
 void codes_save()
 {
 #ifdef DEBUG
-  Serial.println("write config...");
+  Serial.println("write codes...");
 #endif
   File f = LittleFS.open("/codes.bin", "w");
   if (f)
@@ -54,6 +54,48 @@ void codes_save()
 #endif
       f.write((const uint8_t *)(*i).name, sizeof(IrResult));
     }
+    f.close();
+  }
+  else
+  {
+#ifdef DEBUG
+    Serial.println("file open failed (write)");
+#endif
+  }
+}
+
+void telegram_load()
+{
+#ifdef DEBUG
+  Serial.println("read token...");
+#endif
+  File f = LittleFS.open("/token.txt", "r");
+  if (f)
+  {
+    char b[64];
+    f.read((uint8_t *)&b, f.size());
+    bt_token = String(b);
+    f.close();
+  }
+  else
+  {
+#ifdef DEBUG
+    Serial.println("file open failed (read)");
+#endif
+  }
+}
+
+void telegram_save()
+{
+#ifdef DEBUG
+  Serial.println("write token...");
+#endif
+  File f = LittleFS.open("/token.txt", "w");
+  if (f)
+  {
+    char b[64];
+    strcpy(b, bt_token.c_str());
+    f.write(b, strlen(b));
     f.close();
   }
   else

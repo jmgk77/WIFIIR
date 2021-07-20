@@ -9,6 +9,9 @@
 
 #include "www.h"
 
+//###
+extern String bt_token;
+
 const char *html_header = "\
 <!DOCTYPE html>\
 <html>\
@@ -217,26 +220,45 @@ void handle_del()
 
 void handle_config()
 {
-  char *r = (char *)_malloc(512);
+  char *r = (char *)_malloc(1024);
   strcpy(r, "<form action='/clear' method='get'>\
-Limpar botões salvos:<br>\
-<input type='submit' value='Limpar'>\
+Apagar botões salvos:<input type='submit' value='Apagar'>\
+</form>\
+<form action='/reboot' method='get'>\
+Reiniciar WIFIIR:<input type='submit' value='Reiniciar'>\
 </form>\
 <form action='/reset' method='get'>\
-Limpar configurações WIFI:<br>\
-<input type='submit' value='Limpar'>\
+Limpar configurações WIFI:<input type='submit' value='Limpar'>\
+</form>\
+<form action='/token' method='get'>\
+Telegram Token:<input type='checkbox' onchange='document.getElementById(\"token\").disabled=!this.checked;\
+document.getElementById(\"btoken\").disabled=!this.checked;'>\
+<input type='text' id='token' name='token' disabled value='");
+  strcat(r, bt_token.c_str());
+  strcat(r, "'/>\
+<input type='submit' id='btoken' disabled value='Salvar'>\
 </form>\
 <form method='POST' action='/update' enctype='multipart/form-data'>\
-Atualizar Firmware:<br>\
-<input type='file' accept='.bin,.bin.gz' name='firmware'>\
+Atualizar Firmware:<input type='file' accept='.bin,.bin.gz' name='firmware'>\
 <input type='submit' value='Update Firmware'>\
 </form><br>Build Version: ");
   strcat(r, __DATE__);
   strcat(r, " ");
   strcat(r, __TIME__);
-  strcat(r, "<br>");
+  strcat(r, "<br><br>");
   send_html(r);
   free(r);
+}
+
+void handle_token()
+{
+  if (server.hasArg("token"))
+  {
+    bt_token = server.arg("token");
+    bt_setup();
+    telegram_save();
+  }
+  send_html("<div class='card warning'>Token Salvo!</div><script>setTimeout(function (){document.location.href = '/controle';}, 500);</script>");
 }
 
 void handle_clear()
@@ -246,13 +268,24 @@ void handle_clear()
   send_html("<div class='card warning'>Botões limpos</div><script>setTimeout(function (){document.location.href = '/controle';}, 500);</script>");
 }
 
+void reboot()
+{
+  delay(1000);
+  wm.reboot();
+  delay(2000);
+}
+
 void handle_reset()
 {
   send_html("<p>Reseting...</p>");
   wm.resetSettings();
-  delay(1000);
-  wm.reboot();
-  delay(2000);
+  reboot();
+}
+
+void handle_reboot()
+{
+  send_html("<p>Rebooting...</p>");
+  reboot();
 }
 
 void handle_404()
@@ -267,7 +300,9 @@ void install_www_handlers()
   server.on("/add", handle_add);
   server.on("/press", handle_press);
   server.on("/del", handle_del);
+  server.on("/token", handle_token);
   server.on("/save", handle_save);
+  server.on("/reboot", handle_reboot);
   server.on("/reset", handle_reset);
   server.on("/config", handle_config);
   server.on("/clear", handle_clear);

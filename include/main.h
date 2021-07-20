@@ -1,15 +1,19 @@
-//██╗    ██╗██╗███████╗██╗██╗██████╗
-//██║    ██║██║██╔════╝██║██║██╔══██╗
-//██║ █╗ ██║██║█████╗  ██║██║██████╔╝
-//██║███╗██║██║██╔══╝  ██║██║██╔══██╗
-//╚███╔███╔╝██║██║     ██║██║██║  ██║
-// ╚══╝╚══╝ ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═╝
+/*
+██╗    ██╗██╗███████╗██╗██╗██████╗
+██║    ██║██║██╔════╝██║██║██╔══██╗
+██║ █╗ ██║██║█████╗  ██║██║██████╔╝
+██║███╗██║██║██╔══╝  ██║██║██╔══██╗
+╚███╔███╔╝██║██║     ██║██║██║  ██║
+ ╚══╝╚══╝ ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═╝
+*/
 
 #pragma once
 
-#define DEBUG 1
+//#define DEBUG 1
+//#define DEBUG_SEND
+//#define DEBUG_MALLOC
 
-#ifndef DEBUG
+#ifndef DEBUG_MALLOC
 #define _malloc malloc
 #endif
 
@@ -26,6 +30,8 @@
 #include <IRrecv.h>
 #include <IRutils.h>
 
+#include <CTBot.h>
+
 typedef struct
 {
     char name[32];
@@ -35,3 +41,4 @@ typedef struct
 #include "_debug.h"
 #include "persistence.h"
 #include "www.h"
+#include "telegram.h"

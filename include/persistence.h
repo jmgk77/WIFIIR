@@ -12,6 +12,11 @@
 #include "main.h"
 
 extern std::vector<IrResult> ir_codes;
+extern String bt_token;
+extern CTBot tb;
 
 void codes_load();
 void codes_save();
+
+void telegram_load();
+void telegram_save();

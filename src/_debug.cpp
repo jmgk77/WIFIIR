@@ -405,10 +405,12 @@ void dump_esp8266()
     Serial.println(ESP.getFreeHeap());
 }
 
+#ifdef DEBUG_MALLOC
 void *_malloc(size_t size)
 {
     Serial.printf("MALLOC: asked %d available (%d)\n", size, ESP.getFreeHeap());
     return malloc(size);
 }
+#endif
 
 #endif
