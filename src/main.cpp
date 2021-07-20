@@ -1,4 +1,11 @@
-//WIFIIR - Controlador IR via internet
+//██╗    ██╗██╗███████╗██╗██╗██████╗
+//██║    ██║██║██╔════╝██║██║██╔══██╗
+//██║ █╗ ██║██║█████╗  ██║██║██████╔╝
+//██║███╗██║██║██╔══╝  ██║██║██╔══██╗
+//╚███╔███╔╝██║██║     ██║██║██║  ██║
+// ╚══╝╚══╝ ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═╝
+//
+//Controlador IR via internet
 //
 //(c) JMGK 2021
 
@@ -19,6 +26,7 @@
 
 #include <IRsend.h>
 #include <IRrecv.h>
+#include <IRutils.h>
 
 const uint16_t kIrLedPin = D2;
 IRsend irsend(kIrLedPin);
@@ -34,15 +42,12 @@ bool irin_enable = false;
 typedef struct
 {
   char name[32];
-  decode_type_t protocol;
-  uint16_t size;
-  uint64_t value;
+  decode_results results;
 } IrResult;
+
 IrResult irresult;
 
 std::vector<IrResult> ir_codes;
-
-decode_results results;
 
 WiFiManager wm;
 ESP8266WebServer server;
@@ -69,7 +74,7 @@ int led_status = LOW;
 void dump_ir(IrResult irresult)
 {
   String s;
-  switch (irresult.protocol)
+  switch (irresult.results.decode_type)
   {
   case UNKNOWN:
     s = "UNKNOWN";
@@ -392,9 +397,9 @@ void dump_ir(IrResult irresult)
   Serial.print("PROTOCOL: ");
   Serial.println(s.c_str());
   Serial.print("VALUE: ");
-  Serial.println(irresult.value);
+  Serial.println(irresult.results.value);
   Serial.print("SIZE: ");
-  Serial.println(irresult.size);
+  Serial.println(irresult.results.bits);
 }
 
 void _hexdump(void *ptr, int buflen)
@@ -492,7 +497,7 @@ void codes_load()
     {
       f.read((uint8_t *)&tmp, sizeof(IrResult));
 #ifdef DEBUG
-      Serial.printf("name %s - protocol %x - size %d - value %x\n", tmp.name, tmp.protocol, tmp.size, (int)tmp.value);
+      Serial.printf(resultToHumanReadableBasic(&tmp.results).c_str());
       _hexdump((void *)&tmp, sizeof(IrResult));
 #endif
       ir_codes.push_back(tmp);
@@ -517,19 +522,11 @@ void codes_save()
     //para cada entrada...
     for (auto i = ir_codes.cbegin(); i != ir_codes.cend(); ++i)
     {
-      IrResult tmp;
-      memset(&tmp, 0, sizeof(IrResult));
-
-      //copy struct
-      strcpy(tmp.name, (*i).name);
-      tmp.protocol = (*i).protocol;
-      tmp.size = (*i).size;
-      tmp.value = (*i).value;
 #ifdef DEBUG
-      Serial.printf("name %s\tprotocol %x\tsize %d\tvalue %x\n", tmp.name, tmp.protocol, tmp.size, (int)tmp.value);
-      _hexdump((void *)&tmp, sizeof(IrResult));
+      Serial.printf(resultToHumanReadableBasic(&(*i).results).c_str());
+      _hexdump((void *)(*i).name, sizeof(IrResult));
 #endif
-      f.write((const uint8_t *)&tmp, sizeof(IrResult));
+      f.write((const uint8_t *)(*i).name, sizeof(IrResult));
     }
     f.close();
   }
@@ -605,7 +602,7 @@ void send_html(const char *h)
   strcat(r, html_footer);
   server.send(200, "text/html", r);
 #ifdef DEBUG
-  Serial.println(r);
+  //Serial.println(r);
 #endif
   free(r);
 }
@@ -716,7 +713,30 @@ void handle_press()
   {
     button = atoi(server.arg("button").c_str());
     auto i = ir_codes.begin() + button;
-    irsend.send((*i).protocol, (*i).value, (*i).size);
+    //send
+    if ((*i).results.decode_type == decode_type_t::UNKNOWN)
+    {
+#ifdef DEBUG
+      Serial.println("SEND RAW");
+#endif
+      uint16_t *raw_array = resultToRawArray(&(*i).results);
+      irsend.sendRaw(raw_array, getCorrectedRawLength(&(*i).results), 38000);
+      delete[] raw_array;
+    }
+    else if (hasACState((*i).results.decode_type))
+    {
+#ifdef DEBUG
+      Serial.println("SEND AC");
+#endif
+      irsend.send((*i).results.decode_type, (*i).results.state, (*i).results.bits / 8);
+    }
+    else
+    {
+#ifdef DEBUG
+      Serial.println("SEND NORMAL");
+#endif
+      irsend.send((*i).results.decode_type, (*i).results.value, (*i).results.bits);
+    }
   }
   send_html("<div class='card warning'>Botão enviado!</div><script>setTimeout(function (){document.location.href = '/controle';}, 500);</script>");
 }
@@ -850,9 +870,7 @@ void setup()
   }
 
   dump_fs();
-
   codes_load();
-
   irsend.begin();
 }
 
@@ -886,19 +904,12 @@ void loop()
       irrecv.enableIRIn(); // Start up the IR receiver.
       irin_enable = true;
     }
-
     //decode
-    if (irrecv.decode(&results))
+    if (irrecv.decode(&irresult.results))
     {
-      //salva codigos
-      irresult.protocol = results.decode_type;
-      irresult.size = results.bits;
-      irresult.value = results.value;
-
 #ifdef DEBUG
       dump_ir(irresult);
 #endif
-
       //captura feita
       irrecv.disableIRIn();
       led_status = LOW;
