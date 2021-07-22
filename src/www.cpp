@@ -9,9 +9,6 @@
 
 #include "www.h"
 
-//###
-extern String bt_token;
-
 const char *html_header = "\
 <!DOCTYPE html>\
 <html>\
@@ -173,35 +170,10 @@ void handle_save()
 
 void handle_press()
 {
-  int button;
   if (server.hasArg("button"))
   {
-    button = atoi(server.arg("button").c_str());
-    auto i = ir_codes.begin() + button;
-    //send
-    if ((*i).results.decode_type == decode_type_t::UNKNOWN)
-    {
-#ifdef DEBUG
-      Serial.println("SEND RAW");
-#endif
-      uint16_t *raw_array = resultToRawArray(&(*i).results);
-      irsend.sendRaw(raw_array, getCorrectedRawLength(&(*i).results), 38000);
-      delete[] raw_array;
-    }
-    else if (hasACState((*i).results.decode_type))
-    {
-#ifdef DEBUG
-      Serial.println("SEND AC");
-#endif
-      irsend.send((*i).results.decode_type, (*i).results.state, (*i).results.bits / 8);
-    }
-    else
-    {
-#ifdef DEBUG
-      Serial.println("SEND NORMAL");
-#endif
-      irsend.send((*i).results.decode_type, (*i).results.value, (*i).results.bits);
-    }
+    int button = atoi(server.arg("button").c_str());
+    ir_send(button);
   }
   send_html("<div class='card warning'>Botão enviado!</div><script>setTimeout(function (){document.location.href = '/controle';}, 500);</script>");
 }

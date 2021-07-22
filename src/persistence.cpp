@@ -62,6 +62,8 @@ void codes_save()
     Serial.println("file open failed (write)");
 #endif
   }
+  //reconstroi teclado telegram
+  tb_kbd();
 }
 
 void telegram_load()
@@ -69,6 +71,7 @@ void telegram_load()
 #ifdef DEBUG
   Serial.println("read token...");
 #endif
+  bt_token = "";
   File f = LittleFS.open("/token.txt", "r");
   if (f)
   {

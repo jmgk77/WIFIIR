@@ -18,4 +18,6 @@ extern IrResult irresult;
 extern IRsend irsend;
 extern WiFiManager wm;
 
+extern String bt_token;
+
 void install_www_handlers();

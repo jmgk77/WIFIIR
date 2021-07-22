@@ -111,8 +111,12 @@ void setup()
 #endif
 
   codes_load();
+
+  //setup telegram bot
   telegram_load();
   bt_setup();
+  tb_kbd();
+
   irsend.begin();
 }
 

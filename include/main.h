@@ -9,7 +9,7 @@
 
 #pragma once
 
-//#define DEBUG 1
+#define DEBUG
 //#define DEBUG_SEND
 //#define DEBUG_MALLOC
 
@@ -42,3 +42,4 @@ typedef struct
 #include "persistence.h"
 #include "www.h"
 #include "telegram.h"
+#include "ir.h"
