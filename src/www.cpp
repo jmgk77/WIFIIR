@@ -201,19 +201,22 @@ Reiniciar WIFIIR:<input type='submit' value='Reiniciar'>\
 </form>\
 <form action='/reset' method='get'>\
 Limpar configurações WIFI:<input type='submit' value='Limpar'>\
-</form>\
-<form action='/token' method='get'>\
+</form>");
+#ifdef SUPPORT_TELEGRAM
+  strcpy(r, "<form action='/token' method='get'>\
 Telegram Token:<input type='checkbox' onchange='document.getElementById(\"token\").disabled=!this.checked;\
 document.getElementById(\"btoken\").disabled=!this.checked;'>\
 <input type='text' id='token' name='token' disabled value='");
   strcat(r, bt_token.c_str());
-  strcat(r, "'/>\
-<input type='submit' id='btoken' disabled value='Salvar'>\
-</form>\
-<form method='POST' action='/update' enctype='multipart/form-data'>\
+  strcat(r, "'/><input type='submit' id='btoken' disabled value='Salvar'></form>");
+#endif
+#ifdef SUPPORT_OTA
+  strcat(r, "<form method='POST' action='/update' enctype='multipart/form-data'>\
 Atualizar Firmware:<input type='file' accept='.bin,.bin.gz' name='firmware'>\
 <input type='submit' value='Update Firmware'>\
-</form><br>Build Version: ");
+</form>");
+#endif
+  strcat(r, "<br>Build Version: ");
   strcat(r, __DATE__);
   strcat(r, " ");
   strcat(r, __TIME__);
@@ -222,6 +225,7 @@ Atualizar Firmware:<input type='file' accept='.bin,.bin.gz' name='firmware'>\
   free(r);
 }
 
+#ifdef SUPPORT_TELEGRAM
 void handle_token()
 {
   if (server.hasArg("token"))
@@ -232,11 +236,16 @@ void handle_token()
   }
   send_html("<div class='card warning'>Token Salvo!</div><script>setTimeout(function (){document.location.href = '/controle';}, 500);</script>");
 }
+#endif
 
 void handle_clear()
 {
   ir_codes.clear();
+#ifdef SUPPORT_LITTLEFS
   LittleFS.remove("/codes.bin");
+#else
+  SPIFFS.remove("/codes.bin");
+#endif
   send_html("<div class='card warning'>Botões limpos</div><script>setTimeout(function (){document.location.href = '/controle';}, 500);</script>");
 }
 
@@ -272,7 +281,9 @@ void install_www_handlers()
   server.on("/add", handle_add);
   server.on("/press", handle_press);
   server.on("/del", handle_del);
+#ifdef SUPPORT_TELEGRAM
   server.on("/token", handle_token);
+#endif
   server.on("/save", handle_save);
   server.on("/reboot", handle_reboot);
   server.on("/reset", handle_reset);

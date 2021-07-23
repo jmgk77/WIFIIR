@@ -10,8 +10,12 @@
 #pragma once
 
 #define DEBUG
-//#define DEBUG_SEND
-//#define DEBUG_MALLOC
+#define DEBUG_SEND
+#define DEBUG_MALLOC
+
+#define SUPPORT_LITTLEFS
+#define SUPPORT_OTA
+#define SUPPORT_TELEGRAM
 
 #ifndef DEBUG_MALLOC
 #define _malloc malloc
@@ -24,13 +28,19 @@
 #include <ESP8266HTTPUpdateServer.h>
 #include <ESP8266mDNS.h>
 
+#ifdef SUPPORT_LITTLEFS
 #include <LittleFS.h>
+#else
+#include "FS.h"
+#endif
 
 #include <IRsend.h>
 #include <IRrecv.h>
 #include <IRutils.h>
 
+#ifdef SUPPORT_TELEGRAM
 #include <CTBot.h>
+#endif
 
 typedef struct
 {
@@ -41,5 +51,7 @@ typedef struct
 #include "_debug.h"
 #include "persistence.h"
 #include "www.h"
+#ifdef SUPPORT_TELEGRAM
 #include "telegram.h"
+#endif
 #include "ir.h"

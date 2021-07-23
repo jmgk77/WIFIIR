@@ -9,6 +9,8 @@
 
 #include "telegram.h"
 
+#ifdef SUPPORT_TELEGRAM
+
 String bt_token;
 CTBotInlineKeyboard tkbd;
 CTBot tb;
@@ -98,3 +100,5 @@ void bt_loop()
         }
     }
 }
+
+#endif

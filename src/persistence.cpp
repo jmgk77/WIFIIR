@@ -14,7 +14,11 @@ void codes_load()
 #ifdef DEBUG
   Serial.println("read codes...");
 #endif
+#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/codes.bin", "r");
+#else
+  File f = SPIFFS.open("/codes.bin", "r");
+#endif
   if (f)
   {
     IrResult tmp;
@@ -42,7 +46,11 @@ void codes_save()
 #ifdef DEBUG
   Serial.println("write codes...");
 #endif
+#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/codes.bin", "w");
+#else
+  File f = SPIFFS.open("/codes.bin", "w");
+#endif
   if (f)
   {
     //para cada entrada...
@@ -63,16 +71,23 @@ void codes_save()
 #endif
   }
   //reconstroi teclado telegram
+#ifdef SUPPORT_TELEGRAM
   tb_kbd();
+#endif
 }
 
+#ifdef SUPPORT_TELEGRAM
 void telegram_load()
 {
 #ifdef DEBUG
   Serial.println("read token...");
 #endif
   bt_token = "";
+#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/token.txt", "r");
+#else
+  File f = SPIFFS.open("/token.txt", "r");
+#endif
   if (f)
   {
     char b[64];
@@ -93,7 +108,11 @@ void telegram_save()
 #ifdef DEBUG
   Serial.println("write token...");
 #endif
+#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/token.txt", "w");
+#else
+  File f = SPIFFS.open("/token.txt", "w");
+#endif
   if (f)
   {
     char b[64];
@@ -108,3 +127,4 @@ void telegram_save()
 #endif
   }
 }
+#endif

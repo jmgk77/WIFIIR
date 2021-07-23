@@ -30,7 +30,9 @@ std::vector<IrResult> ir_codes;
 
 WiFiManager wm;
 ESP8266WebServer server;
+#ifdef SUPPORT_OTA
 ESP8266HTTPUpdateServer httpUpdater;
+#endif
 
 bool decoding_onoff;
 
@@ -85,7 +87,9 @@ void setup()
   }
 
   MDNS.begin("WIFIIR");
+#ifdef SUPPORT_OTA
   httpUpdater.setup(&server, "/update");
+#endif
 
   install_www_handlers();
 
@@ -99,7 +103,11 @@ void setup()
   digitalWrite(LED_PIN, led_status);
 
   //carrega botões salvos
+#ifdef SUPPORT_LITTLEFS
   if (!LittleFS.begin())
+#else
+  if (!SPIFFS.begin())
+#endif
   {
 #ifdef DEBUG
     Serial.println("An Error has occurred while mounting LittleFS");
@@ -113,9 +121,11 @@ void setup()
   codes_load();
 
   //setup telegram bot
+#ifdef SUPPORT_TELEGRAM
   telegram_load();
   bt_setup();
   tb_kbd();
+#endif
 
   irsend.begin();
 }
@@ -165,6 +175,8 @@ void loop()
     }
   }
 
-  //telegram loop
+//telegram loop
+#ifdef SUPPORT_TELEGRAM
   bt_loop();
+#endif
 }
