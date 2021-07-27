@@ -10,12 +10,12 @@
 #pragma once
 
 #define DEBUG
-#define DEBUG_SEND
-#define DEBUG_MALLOC
+//#define DEBUG_SEND
+//#define DEBUG_MALLOC
 
 #define SUPPORT_LITTLEFS
 #define SUPPORT_OTA
-#define SUPPORT_TELEGRAM
+//#define SUPPORT_TELEGRAM
 
 #ifndef DEBUG_MALLOC
 #define _malloc malloc
