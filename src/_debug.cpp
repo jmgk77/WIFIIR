@@ -389,23 +389,23 @@ void dump_fs()
 void dump_esp8266()
 {
     Serial.println("ESP8266_INFO");
-    Serial.print("ESP.getBootMode(); ");
+    Serial.print("ESP.getBootMode(): ");
     Serial.println(ESP.getBootMode());
-    Serial.print("ESP.getSdkVersion(); ");
+    Serial.print("ESP.getSdkVersion(): ");
     Serial.println(ESP.getSdkVersion());
-    Serial.print("ESP.getBootVersion(); ");
+    Serial.print("ESP.getBootVersion(): ");
     Serial.println(ESP.getBootVersion());
-    Serial.print("ESP.getChipId(); ");
+    Serial.print("ESP.getChipId(): ");
     Serial.println(ESP.getChipId());
-    Serial.print("ESP.getFlashChipSize(); ");
+    Serial.print("ESP.getFlashChipSize(): ");
     Serial.println(ESP.getFlashChipSize());
-    Serial.print("ESP.getFlashChipRealSize(); ");
+    Serial.print("ESP.getFlashChipRealSize(): ");
     Serial.println(ESP.getFlashChipRealSize());
-    Serial.print("ESP.getFlashChipSizeByChipId(); ");
+    Serial.print("ESP.getFlashChipSizeByChipId(): ");
     Serial.println(ESP.getFlashChipSizeByChipId());
-    Serial.print("ESP.getFlashChipId(); ");
+    Serial.print("ESP.getFlashChipId(): ");
     Serial.println(ESP.getFlashChipId());
-    Serial.print("ESP.getFreeHeap(); ");
+    Serial.print("ESP.getFreeHeap(): ");
     Serial.println(ESP.getFreeHeap());
 }
 
@@ -413,7 +413,12 @@ void dump_esp8266()
 void *_malloc(size_t size)
 {
     Serial.printf("MALLOC: asked %d available (%d)\n", size, ESP.getFreeHeap());
-    return malloc(size);
+    void *m = malloc(size);
+    if (!m)
+    {
+        Serial.println("MALLOC ERROR!");
+    }
+    return m;
 }
 #endif
 
