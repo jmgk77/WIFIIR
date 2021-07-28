@@ -26,7 +26,7 @@ void codes_load()
     for (int i = 0; i < size; i += sizeof(IrResult))
     {
       f.read((uint8_t *)&tmp, sizeof(IrResult));
-#ifdef DEBUG
+#ifdef DEBUG_CODES
       Serial.printf(resultToHumanReadableBasic(&tmp.results).c_str());
       _hexdump((void *)&tmp, sizeof(IrResult));
 #endif
@@ -56,7 +56,7 @@ void codes_save()
     //para cada entrada...
     for (auto i = ir_codes.cbegin(); i != ir_codes.cend(); ++i)
     {
-#ifdef DEBUG
+#ifdef DEBUG_CODES
       Serial.printf(resultToHumanReadableBasic(&(*i).results).c_str());
       _hexdump((void *)(*i).name, sizeof(IrResult));
 #endif
