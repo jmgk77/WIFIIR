@@ -412,7 +412,11 @@ void dump_esp8266()
 #ifdef DEBUG_MALLOC
 void *_malloc(size_t size)
 {
-    Serial.printf("MALLOC: asked %d available (%d)\n", size, ESP.getFreeHeap());
+    uint32_t free;
+    uint16_t max;
+    uint8_t frag;
+    ESP.getHeapStats(&free, &max, &frag);
+    Serial.printf("MALLOC: asked %d (free: %5d - max: %5d - frag: %3d%%)\n", size, free, max, frag);
     void *m = malloc(size);
     if (!m)
     {

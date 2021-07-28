@@ -9,7 +9,7 @@
 
 #include "www.h"
 
-const char *html_header = "\
+const char html_header[] PROGMEM = "\
 <!DOCTYPE html><html><head><title>WIFIIR</title>\
 <meta charset='UTF-8'/>\
 <link rel='shortcut icon' href='data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAABmJLR0QA/wD/AP+gvaeTAAABoklEQVRIie3UvWsUURQF8F+2VEyKsJgIiokRApZa+VGIKVRSmVJtAgr6B1gEO/VvsLDWNkbUCKKFhbZpwoYIClZ20WiXj7WYu8zsM7M7E6JVDlyYefecc997986wj11ioE9+FNO4gFM4hqHI/cQ3LOMDXuJ73Q1cwiI20a4Ym3iFi1UKnMCbGuZlsRheO+Iq1hLBFj5iTnZ9EzgYcTLW5vApuEXtOq6nRe4lxC087bWrHTCBZ4nPNu53COOx0El+wemCwRHclV1HC78jWniNO8Hp4Ex4FIsdh0HZtLTxFsMhGMFjbOjfk43gHg7tcHi1w/tQZxdNnEcj3q/gR4UCaazhcng0wrOpBLP+Huv3uIVJ+TBM4nbk0jGfLTMv4rPufk1V0Ezha0G3WqXQwyC/kx97FI+whF8RS8EdCU5TfroHVQrBgcLzzTAu68s6bpRoK2NG9+iXxTau9TJq9ErinPzH2wqzoYgZrERuAGdrHqILR/ECT2TfW4rByC0Ed88wHqbPMbaXxikW5H2ZryPs16MU7Zr8XWNMdpJ5//jq9vH/8QdSN6mUF/XpPQAAAABJRU5ErkJggg=='/>\
@@ -18,18 +18,7 @@ const char *html_header = "\
 </head><body><header class='sticky'>\
 <div class='card warning' style='width: 80%;margin: 0 auto;'>\
 <div class='row'><p style='width: 80%;margin: 0 auto;'>WIFIIR - Controle remoto IR via WIFI</p>\
-</div></div></header>";
-
-const char *html_footer = "\
-<footer class='sticky'><label for='drawer-control' class='drawer-toggle'></label>\
-<input type='checkbox' id='drawer-control' class='drawer'>\
-<nav><label for='drawer-control' class='drawer-close'></label>\
-<a class='doc' href='/c'>Controle</a><br>\
-<a class='doc' href='/a'>Adicionar</a><br>\
-<a class='doc' href='/g'>Configurações</a><br>\
-</nav></footer></body></html>";
-
-const char *html_css = "\
+</div></div></header>\
 <style>\
 .w,.w:focus,.w:hover{\
 background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQflBxMQGDNbPF7PAAAA7klEQVQoz5XRPUuCAQDE8d+jUgRGWImbNFj2EEEIDS1NCdHiEkV9nfCrFEWLSwQ1tTi0BCFPL0u0iWEEQihqTVKUFd12x3+5O/5Q8MUl0PX2HUhaEJo2go4nkZrWABi1ZlnDtUctJGUtSrt0rh3I2vGsoi5txiSaHjRklKQcBPacuRBal1TXxKSMllORVcXAlBeb5py40jOGV3FLNtw5NhFg1oojI4ry4ui5daZjS9V9gJi+ebtqqhpIW7Fg342Y/qBuQR7k5EBeYdhQ20JEDoevmlI2Lqks9REmPgFtXSG62j99ESqhIvrtvMD/9A6R0TwXv22H+QAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMS0wNy0xOVQxNjoyNDoyNSswMDowMHcnQy4AAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjEtMDctMTlUMTY6MjQ6MjUrMDA6MDAGevuSAAAAAElFTkSuQmCC);\
@@ -53,18 +42,27 @@ background-repeat:no-repeat;\
 background-color:#f8f8f8}\
 </style>";
 
+const char html_footer[] PROGMEM = "\
+<footer class='sticky'><label for='drawer-control' class='drawer-toggle'></label>\
+<input type='checkbox' id='drawer-control' class='drawer'>\
+<nav><label for='drawer-control' class='drawer-close'></label>\
+<a class='doc' href='/c'>Controle</a><br>\
+<a class='doc' href='/a'>Adicionar</a><br>\
+<a class='doc' href='/g'>Configurações</a><br>\
+</nav></footer></body></html>";
+
 void send_html(const char *h)
 {
 #ifdef DEBUG_F
   Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(strlen(h) + strlen(html_header) + strlen(html_footer) + 16);
-  sprintf(r, "%s%s%s", html_header, h, html_footer);
-  server.send(200, "text/html", r);
+  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  server.send_P(200, "text/html", html_header);
+  server.sendContent(h);
+  server.sendContent_P(html_footer);
 #ifdef DEBUG_SEND
-  Serial.println(r);
+  Serial.println(h);
 #endif
-  free(r);
 }
 
 void handle_root()
@@ -72,22 +70,22 @@ void handle_root()
 #ifdef DEBUG_F
   Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(strlen(html_css) + 118 + (10 * 567) + 19 + 33 + 33 + 21);
+  char *r = (char *)_malloc(118 + (10 * 567) + 19 + 33 + 33 + 21);
 
   int index = server.hasArg("i") ? atoi(server.arg("i").c_str()) : 0;
   int c = index;
 
-  sprintf(r, "%s<table><thead><tr><th>Name</th><th>Button</th><th>Edit</th><th>Up</th><th>Down</th><th>Delete</th></tr></thead><tbody>", html_css);
+  strcpy_P(r, PSTR("<table><thead><tr><th>Name</th><th>Button</th><th>Edit</th><th>Up</th><th>Down</th><th>Delete</th></tr></thead><tbody>"));
   for (auto i = ir_codes.cbegin() + index; (i != ir_codes.cend()) && (c < (index + 10)); ++i, c++)
   {
-    sprintf(r + strlen(r), "<tr><td data-label='Name'>%s</td>\
+    sprintf_P(r + strlen(r), PSTR("<tr><td data-label='Name'>%s</td>\
 <td data-label='Button'><input type='button' class='w' onclick='window.location.href=\"/p?b=%d\";'/></td>\
 <td data-label='Edit'><input type='button' class='e' onclick='window.location.href=\"/e?b=%d\";'/></td>\
 <td data-label='Up'><input type='button' class='u' onclick='window.location.href=\"/u?b=%d\";'/></td>\
 <td data-label='Down'><input type='button' class='d' onclick='window.location.href=\"/d?b=%d\";'/></td>\
 <td data-label='Delete'><input type='button' class='t' onclick='window.location.href=\"/t?b=%d\";'/></td>\
-</tr>",
-            (*i).name, c, c, c, c, c);
+</tr>"),
+              (*i).name, c, c, c, c, c);
   }
   strcat(r, "</tbody><tfoot><tr>");
   if (index)
@@ -109,7 +107,7 @@ void handle_add()
   Serial.println(__func__);
 #endif
   char *r = (char *)_malloc(512);
-  sprintf(r, "%s%s\
+  sprintf_P(r, PSTR("%s%s\
 <form action='/s' method='GET'>\
 <p>1. Entre o nome do botão que você quer adicionar</p>\
 <p>2. Espere a luz do WIFIIR começar a piscar</p>\
@@ -117,10 +115,10 @@ void handle_add()
 <p>4. Clique em ADICIONAR abaixo</p>\
 <input type='text' name='b' maxlength='31' value='%s'>\
 <input type='submit' value='Salvar'>\
-</form>",
-          server.hasArg("e") ? "<div class='card error'>Preencha o nome do botão</div>" : "",
-          server.hasArg("n") ? "<div class='card error'>Erro na leitura do botão</div>" : "",
-          server.hasArg("b") ? server.arg("b").c_str() : "");
+</form>"),
+            server.hasArg("e") ? "<div class='card error'>Preencha o nome do botão</div>" : "",
+            server.hasArg("n") ? "<div class='card error'>Erro na leitura do botão</div>" : "",
+            server.hasArg("b") ? server.arg("b").c_str() : "");
   send_html(r);
   free(r);
   //inicia leitor de IR
@@ -133,8 +131,8 @@ void send_warning(const char *txt, int timeout = 500)
   Serial.println(__func__);
 #endif
   char *r = (char *)_malloc(512);
-  sprintf(r, "<div class='card warning'>%s</div><script>setTimeout(function (){document.location.href = '/c';}, %d);</script>",
-          txt, timeout);
+  sprintf_P(r, PSTR("<div class='card warning'>%s</div><script>setTimeout(function (){document.location.href = '/c';}, %d);</script>"),
+            txt, timeout);
   send_html(r);
   free(r);
 }
@@ -238,27 +236,26 @@ void handle_config()
   Serial.println(__func__);
 #endif
   char *r = (char *)_malloc(1024);
-  strcpy(r, "<form action='/l' method='GET'>Apagar botões salvos:<input type='submit' value='Apagar'></form>\
+  strcpy_P(r, PSTR("<form action='/l' method='GET'>Apagar botões salvos:<input type='submit' value='Apagar'></form>\
 <form action='/b' method='GET'>Reiniciar WIFIIR:<input type='submit' value='Reiniciar'></form>\
-<form action='/r' method='GET'>Limpar configurações WIFI:<input type='submit' value='Limpar'></form>");
+<form action='/r' method='GET'>Limpar configurações WIFI:<input type='submit' value='Limpar'></form>"));
 #ifdef DEBUG_GENRND
-  strcat(r, "</form>\
-<form action='/r' method='GET'>\
+  strcat_P(r, PSTR("<form action='/r' method='GET'>\
 Gerar entradas aleatórias:<input type='submit' value='Gen'>\
-</form>");
+</form>"));
 #endif
 #ifdef SUPPORT_TELEGRAM
-  sprintf(r + strlen(r), "<form action='/k' method='GET'>\
+  sprintf_P(r + strlen(r), PSTR("<form action='/k' method='GET'>\
 Telegram Token:<input type='checkbox' onchange='document.getElementById(\"k\").disabled=!this.checked;\
 document.getElementById(\"bk\").disabled=!this.checked;'>\
 <input type='text' id='k' name='k' disabled value='%s'/>\
-<input type='submit' id='bk' disabled value='Salvar'></form>",
-          bt_token.c_str());
+<input type='submit' id='bk' disabled value='Salvar'></form>"),
+            bt_token.c_str());
 #endif
 #ifdef SUPPORT_OTA
-  strcat(r, "<form method='POST' action='/update' enctype='multipart/form-data'>\
+  strcat_P(r, PSTR("<form method='POST' action='/update' enctype='multipart/form-data'>\
 Atualizar Firmware:<input type='file' accept='.bin,.bin.gz' name='firmware'>\
-<input type='submit' value='Update Firmware'></form>");
+<input type='submit' value='Update Firmware'></form>"));
 #endif
   sprintf(r + strlen(r), "<br>Build Version: %s %s<br><br>", __DATE__, __TIME__);
   send_html(r);

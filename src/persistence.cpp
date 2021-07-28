@@ -12,7 +12,7 @@
 void codes_load()
 {
 #ifdef DEBUG
-  Serial.println("read codes...");
+  Serial.print("read codes");
 #endif
 #ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/codes.bin", "r");
@@ -23,6 +23,9 @@ void codes_load()
   {
     IrResult tmp;
     int size = f.size();
+#ifdef DEBUG
+    Serial.printf("(%d)\n", (size / sizeof(IrResult)));
+#endif
     for (int i = 0; i < size; i += sizeof(IrResult))
     {
       f.read((uint8_t *)&tmp, sizeof(IrResult));

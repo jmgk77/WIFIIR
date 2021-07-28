@@ -13,8 +13,8 @@
 //#define DEBUG_SEND
 #define DEBUG_MALLOC
 #define DEBUG_F
-#define DEBUG_CODES
-//#define DEBUG_GENRND 22
+//#define DEBUG_CODES
+#define DEBUG_GENRND 22
 
 #define SUPPORT_LITTLEFS
 #define SUPPORT_OTA
