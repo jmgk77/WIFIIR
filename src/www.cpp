@@ -46,7 +46,7 @@ const char html_footer[] PROGMEM = "\
 <footer class='sticky'><label for='drawer-control' class='drawer-toggle'></label>\
 <input type='checkbox' id='drawer-control' class='drawer'>\
 <nav><label for='drawer-control' class='drawer-close'></label>\
-<a class='doc' href='/c'>Controle</a><br>\
+<a class='doc' href='/'>Controle</a><br>\
 <a class='doc' href='/a'>Adicionar</a><br>\
 <a class='doc' href='/g'>Configurações</a><br>\
 </nav></footer></body></html>";
@@ -75,6 +75,7 @@ void handle_root()
   int index = server.hasArg("i") ? atoi(server.arg("i").c_str()) : 0;
   int c = index;
 
+  //build table
   strcpy_P(r, PSTR("<table><thead><tr><th>Name</th><th>Button</th><th>Edit</th><th>Up</th><th>Down</th><th>Delete</th></tr></thead><tbody>"));
   for (auto i = ir_codes.cbegin() + index; (i != ir_codes.cend()) && (c < (index + 10)); ++i, c++)
   {
@@ -88,6 +89,8 @@ void handle_root()
               (*i).name, c, c, c, c, c);
   }
   strcat(r, "</tbody><tfoot><tr>");
+
+  //nav
   if (index)
   {
     sprintf(r + strlen(r), "<td><a href='c?i=%d'> < </a></td>", (index - 10));
@@ -101,6 +104,18 @@ void handle_root()
   free(r);
 }
 
+void send_warning(const char *txt, int timeout = 500)
+{
+#ifdef DEBUG_F
+  Serial.println(__func__);
+#endif
+  char *r = (char *)_malloc(512);
+  sprintf_P(r, PSTR("<div class='card warning'>%s</div><script>setTimeout(function (){document.location.href = '/';}, %d);</script>"),
+            txt, timeout);
+  send_html(r);
+  free(r);
+}
+
 void handle_add()
 {
 #ifdef DEBUG_F
@@ -108,7 +123,7 @@ void handle_add()
 #endif
   char *r = (char *)_malloc(512);
   sprintf_P(r, PSTR("%s%s\
-<form action='/s' method='GET'>\
+<form action='/s' method='POST'>\
 <p>1. Entre o nome do botão que você quer adicionar</p>\
 <p>2. Espere a luz do WIFIIR começar a piscar</p>\
 <p>3. Aperte o botão no controle até a luz desligar</p>\
@@ -125,24 +140,13 @@ void handle_add()
   decoding_onoff = true;
 }
 
-void send_warning(const char *txt, int timeout = 500)
-{
-#ifdef DEBUG_F
-  Serial.println(__func__);
-#endif
-  char *r = (char *)_malloc(512);
-  sprintf_P(r, PSTR("<div class='card warning'>%s</div><script>setTimeout(function (){document.location.href = '/c';}, %d);</script>"),
-            txt, timeout);
-  send_html(r);
-  free(r);
-}
-
-void handle_save()
+void handle_add2()
 {
 #ifdef DEBUG_F
   Serial.println(__func__);
 #endif
   String button = server.hasArg("b") ? server.arg("b") : "";
+  //clicou add sem ter nome/codigo
   if ((decoding_onoff) || (button.isEmpty()))
   {
     //redirect to /add with "button" as param
@@ -178,7 +182,30 @@ void handle_edit()
 #ifdef DEBUG_F
   Serial.println(__func__);
 #endif
-  // ###
+  int button = atoi(server.arg("b").c_str());
+  auto i = ir_codes.cbegin() + button;
+  if (server.hasArg("n"))
+  {
+    //chamou com nome, modifica e salva
+    strcpy((char *)(*i).name, server.arg("n").c_str());
+    codes_save();
+    send_warning("Botão editado!");
+  }
+  else
+  {
+    //chamou sem nome, pergunta
+    char *r = (char *)_malloc(512);
+    sprintf_P(r, PSTR("\
+<form action='/e' method='POST'>\
+Entre o novo nome:\
+<input type='hidden' name='b' value='%d'>\
+<input type='text' name='n' maxlength='31' value='%s'>\
+<input type='submit' value='Salvar'>\
+</form>"),
+              button, (*i).name);
+    send_html(r);
+    free(r);
+  }
 }
 
 void move_button(int button, int offset)
@@ -200,11 +227,12 @@ void handle_up()
   Serial.println(__func__);
 #endif
   int button = atoi(server.arg("b").c_str());
+  //primeiro botão nao pode ir pra cima
   if (button != 0)
   {
     move_button(button, -1);
   }
-  send_html("<script>document.location.href = '/c'</script>");
+  send_html("<script>document.location.href = '/'</script>");
 }
 
 void handle_down()
@@ -213,11 +241,12 @@ void handle_down()
   Serial.println(__func__);
 #endif
   int button = atoi(server.arg("b").c_str());
+  //ultimo botão não pode ir pra baixo
   if (button != (int)(ir_codes.size() - 1))
   {
     move_button(button, 1);
   }
-  send_html("<script>document.location.href = '/c'</script>");
+  send_html("<script>document.location.href = '/'</script>");
 }
 
 void handle_del()
@@ -236,16 +265,16 @@ void handle_config()
   Serial.println(__func__);
 #endif
   char *r = (char *)_malloc(1024);
-  strcpy_P(r, PSTR("<form action='/l' method='GET'>Apagar botões salvos:<input type='submit' value='Apagar'></form>\
-<form action='/b' method='GET'>Reiniciar WIFIIR:<input type='submit' value='Reiniciar'></form>\
-<form action='/r' method='GET'>Limpar configurações WIFI:<input type='submit' value='Limpar'></form>"));
+  strcpy_P(r, PSTR("<form action='/l' method='POST'>Apagar botões salvos:<input type='submit' value='Apagar'></form>\
+<form action='/b' method='POST'>Reiniciar WIFIIR:<input type='submit' value='Reiniciar'></form>\
+<form action='/r' method='POST'>Limpar configurações WIFI:<input type='submit' value='Limpar'></form>"));
 #ifdef DEBUG_GENRND
-  strcat_P(r, PSTR("<form action='/r' method='GET'>\
+  strcat_P(r, PSTR("<form action='/r' method='POST'>\
 Gerar entradas aleatórias:<input type='submit' value='Gen'>\
 </form>"));
 #endif
 #ifdef SUPPORT_TELEGRAM
-  sprintf_P(r + strlen(r), PSTR("<form action='/k' method='GET'>\
+  sprintf_P(r + strlen(r), PSTR("<form action='/k' method='POST'>\
 Telegram Token:<input type='checkbox' onchange='document.getElementById(\"k\").disabled=!this.checked;\
 document.getElementById(\"bk\").disabled=!this.checked;'>\
 <input type='text' id='k' name='k' disabled value='%s'/>\
@@ -270,6 +299,7 @@ void handle_random()
 #endif
   IrResult tmp;
   memset(&tmp, 0, sizeof(IrResult));
+  //gera botões aleatorios
   for (int i = 1; i <= DEBUG_GENRND; i++)
   {
     itoa(i, tmp.name, 10);
@@ -286,12 +316,10 @@ void handle_token()
 #ifdef DEBUG_F
   Serial.println(__func__);
 #endif
-  if (server.hasArg("k"))
-  {
-    bt_token = server.arg("k");
-    bt_setup();
-    telegram_save();
-  }
+  bt_token = server.hasArg("k") ? server.arg("k") : "";
+  bt_setup();
+  telegram_save();
+  tb_kbd();
   send_warning("Token Salvo!");
 }
 #endif
@@ -353,7 +381,6 @@ void install_www_handlers()
   Serial.println(__func__);
 #endif
   server.on("/", handle_root);
-  server.on("/c", handle_root);
   server.on("/a", handle_add);
   server.on("/p", handle_press);
   server.on("/e", handle_edit);
@@ -366,7 +393,7 @@ void install_www_handlers()
 #ifdef SUPPORT_TELEGRAM
   server.on("/k", handle_token);
 #endif
-  server.on("/s", handle_save);
+  server.on("/s", handle_add2);
   server.on("/b", handle_reboot);
   server.on("/r", handle_reset);
   server.on("/g", handle_config);
