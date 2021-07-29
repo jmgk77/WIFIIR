@@ -29,11 +29,11 @@ background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAA
 background-repeat:no-repeat;\
 background-color:#f8f8f8}\
 .u,.u:focus,.u:hover{\
-background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdAAAAHQBMYXlgQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAADwSURBVDiNldHBCoIwGMDxdfMuRI6iUua8FOaQmlB9YvRkklKv1K0X6BxCQXTuEdbJKN2mDnYZ3//H2HpCCKRa/nrnIoTQ9XK+KYeEENLtR9vQxMO3iYdvP9qGqjltPOdxMudxokO0cXmmQxrjJqRVrENaxypEGQOAgW1SYJsUAGCoEDQYO09ZbE3JnQZRSoMotabkLkP6o/GrdsUy9hg/lGce4wcZUvsFADCsifPwGM+qgx7jmTVxHlWkFrtslase0GWrvIr8xTTgx6ZfoAE//iKdYhmCsE0KypantvEXYcsTtkmBZpv9pmv8fZNFmHwADqQjycOvhksAAAAASUVORK5CYII=);\
+background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdAAAAHQBMYXlgQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAACVSURBVDiNY/z//z8DJYCJIt00N6AxkZGjMZGRA68J////x4qrUhjErXQYX1rpML6sSmEQx6UOqwuqUxnFD5xgvGSmxVJppsVSeeAE46XqVEZxolwAs7kgjDUJJlYQxpqEyyUENRMyhCjN+AwhWjMuQ0jSjM0QBnt9psekaEY2xF6f6TFDQwKDAKmaYdjPmUGccehnJgC+0ETc+bot3wAAAABJRU5ErkJggg==);\
 background-repeat:no-repeat;\
 background-color:#f8f8f8}\
 .d,.d:focus,.d:hover{\
-background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdAAAAHQBMYXlgQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAEhSURBVDiNnZO/TsMwEIevTJmQUAUiSZX+oWnaISFKFYk4Q2zyGFl4GD8IC48BEQvMiKFCVVVVqEszWMrEdkxFbWKHgCVPvu/z6Xc2+CQJERH+s72Y3oA5miydgPC/wk5AuDmaLE9sy3BLUWTTecyh5ZrOY16KIrMtwwVEBEqppg/tdZtOnIBwfWivKaUaIsLPQRtJFT4S/CaRwTWBSqKCERE6l/2rzwvDunt7eXrch8QY0z4228Xp2fkDAEApiszpm7M8z7/2NdfkNt1tN/fgkyTsGj3hRSytdTIYr/TBeFW92YtY2jV6widJCIiolEgfzwF8lEEbSRWuhdgkkcHSKcgkKlgqqEqaYKXgUNIEIyJ0EFH5adwomQEAvL8+L1Q130T1AeyZwbdgAAAAAElFTkSuQmCC);\
+background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdAAAAHQBMYXlgQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAADmSURBVDiNxZM/isJAHIXfLzidhYUgITcIEa38B4JeYioN7CDYTilJZSF4DzsvobWVNl4hqK3lwrPaJYvJrtEFH0wz875vZmBGSOKVOC/R/yKYf0jlWXg+lSr6dSexWhmSKDKsVqZfdxLEIby2L5ciEquVaftyiUN4IFlIkoZJ4nshDuF1/pBYrUwnBf8QkEQ0gtsN5JwlsVqZbiDnaAQ3PX+3S5YkDyYJyXqJ8Vjc7V4OLb80A4Dd8XM5aLKxWDG5K+fdN5qg1gvk1AvkFE1Qy+tlnuAreihlAFhveM3r/Cp4JO//TDe1ACb01Xb7lgAAAABJRU5ErkJggg==);\
 background-repeat:no-repeat;\
 background-color:#f8f8f8}\
 .t,.t:focus,.t:hover{\
@@ -93,11 +93,11 @@ void handle_root()
   //nav
   if (index)
   {
-    sprintf(r + strlen(r), "<td><a href='c?i=%d'> < </a></td>", (index - 10));
+    sprintf(r + strlen(r), "<td><a href='/?i=%d'> < </a></td>", (index - 10));
   }
   if (((unsigned int)c < ir_codes.size()))
   {
-    sprintf(r + strlen(r), "<td><a href='c?i=%d'> > </a></td>", (index + 10));
+    sprintf(r + strlen(r), "<td><a href='/?i=%d'> > </a></td>", (index + 10));
   }
   strcat(r, "</tr></tfoot></table>");
   send_html(r);
