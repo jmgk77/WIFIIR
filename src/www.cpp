@@ -15,11 +15,7 @@ const char html_header[] PROGMEM = "\
 <link rel='shortcut icon' href='data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAABmJLR0QA/wD/AP+gvaeTAAABoklEQVRIie3UvWsUURQF8F+2VEyKsJgIiokRApZa+VGIKVRSmVJtAgr6B1gEO/VvsLDWNkbUCKKFhbZpwoYIClZ20WiXj7WYu8zsM7M7E6JVDlyYefecc997986wj11ioE9+FNO4gFM4hqHI/cQ3LOMDXuJ73Q1cwiI20a4Ym3iFi1UKnMCbGuZlsRheO+Iq1hLBFj5iTnZ9EzgYcTLW5vApuEXtOq6nRe4lxC087bWrHTCBZ4nPNu53COOx0El+wemCwRHclV1HC78jWniNO8Hp4Ex4FIsdh0HZtLTxFsMhGMFjbOjfk43gHg7tcHi1w/tQZxdNnEcj3q/gR4UCaazhcng0wrOpBLP+Huv3uIVJ+TBM4nbk0jGfLTMv4rPufk1V0Ezha0G3WqXQwyC/kx97FI+whF8RS8EdCU5TfroHVQrBgcLzzTAu68s6bpRoK2NG9+iXxTau9TJq9ErinPzH2wqzoYgZrERuAGdrHqILR/ECT2TfW4rByC0Ed88wHqbPMbaXxikW5H2ZryPs16MU7Zr8XWNMdpJ5//jq9vH/8QdSN6mUF/XpPQAAAABJRU5ErkJggg=='/>\
 <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css'>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
-</head><body><header class='sticky'>\
-<div class='card warning' style='width: 80%;margin: 0 auto;'>\
-<div class='row'><p style='width: 80%;margin: 0 auto;'>WIFIIR - Controle remoto IR via WIFI</p>\
-</div></div></header>\
-<style>\
+</head><style>\
 .w,.w:focus,.w:hover{\
 background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQflBxMQGDNbPF7PAAAA7klEQVQoz5XRPUuCAQDE8d+jUgRGWImbNFj2EEEIDS1NCdHiEkV9nfCrFEWLSwQ1tTi0BCFPL0u0iWEEQihqTVKUFd12x3+5O/5Q8MUl0PX2HUhaEJo2go4nkZrWABi1ZlnDtUctJGUtSrt0rh3I2vGsoi5txiSaHjRklKQcBPacuRBal1TXxKSMllORVcXAlBeb5py40jOGV3FLNtw5NhFg1oojI4ry4ui5daZjS9V9gJi+ebtqqhpIW7Fg342Y/qBuQR7k5EBeYdhQ20JEDoevmlI2Lqks9REmPgFtXSG62j99ESqhIvrtvMD/9A6R0TwXv22H+QAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMS0wNy0xOVQxNjoyNDoyNSswMDowMHcnQy4AAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjEtMDctMTlUMTY6MjQ6MjUrMDA6MDAGevuSAAAAAElFTkSuQmCC);\
 background-repeat:no-repeat;\
@@ -53,7 +49,15 @@ display:flex;\
 flex-flow:row wrap;\
 padding:0;\
 overflow:hidden}\
-</style>";
+.x{\
+margin:0 auto;\
+text-align:center}\
+</style>\
+<body><header class='sticky'>\
+<div class='x card warning'>\
+<p class='x'>WIFIIR - Controle remoto IR via WIFI</p>\
+</div></header>\
+";
 
 const char html_footer[] PROGMEM = "\
 <footer class='sticky'><label for='drawer-control' class='drawer-toggle'></label>\
@@ -86,10 +90,11 @@ void handle_root()
   char *r = (char *)_malloc(15 + (10 * (552 + 32)) + 15 + 24 + 42 + 24 + 12);
 
   int index = server.hasArg("i") ? atoi(server.arg("i").c_str()) : 0;
+  index = (index < (int)ir_codes.size()) ? index : (index - 10);
   int c = index;
 
   //table
-  strcpy_P(r, PSTR("<div class='f'>"));
+  strcpy(r, "<div class='f'>");
   for (auto i = ir_codes.cbegin() + index; (i != ir_codes.cend()) && (c < (index + 10)); ++i, c++)
   {
     sprintf_P(r + strlen(r), PSTR("\
@@ -127,7 +132,7 @@ void send_warning(const char *txt, int timeout = 500)
   Serial.println(__func__);
 #endif
   char *r = (char *)_malloc(512);
-  sprintf_P(r, PSTR("<div class='card warning'>%s</div><script>setTimeout(function (){document.location.href = '/';}, %d);</script>"),
+  sprintf_P(r, PSTR("<div class='x card warning'><p class='x'>%s</p></div><script>setTimeout(function (){document.location.href = '/';}, %d);</script>"),
             txt, timeout);
   send_html(r);
   free(r);
@@ -138,18 +143,18 @@ void handle_add()
 #ifdef DEBUG_F
   Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(512);
+  char *r = (char *)_malloc(1024);
   sprintf_P(r, PSTR("%s%s\
 <form action='/s' method='POST'>\
 <p>1. Entre o nome do botão que você quer adicionar</p>\
+<input type='text' name='b' maxlength='31' value='%s'>\
 <p>2. Espere a luz do WIFIIR começar a piscar</p>\
 <p>3. Aperte o botão no controle até a luz desligar</p>\
 <p>4. Clique em ADICIONAR abaixo</p>\
-<input type='text' name='b' maxlength='31' value='%s'>\
-<input type='submit' value='Salvar'>\
+<input type='submit' value='Adicionar'>\
 </form>"),
-            server.hasArg("e") ? "<div class='card error'>Preencha o nome do botão</div>" : "",
-            server.hasArg("n") ? "<div class='card error'>Erro na leitura do botão</div>" : "",
+            server.hasArg("e") ? "<div class='x card error'><p class='x'>Preencha o nome do botão</p></div>" : "",
+            server.hasArg("n") ? "<div class='x card error'><p class='x'>Erro na leitura do botão</p></div>" : "",
             server.hasArg("b") ? server.arg("b").c_str() : "");
   send_html(r);
   free(r);
@@ -213,12 +218,12 @@ void handle_edit()
     //chamou sem nome, pergunta
     char *r = (char *)_malloc(512);
     sprintf_P(r, PSTR("\
-<form action='/e' method='POST'>\
-Entre o novo nome:\
+<form class='f' action='/e' method='POST'>\
+<div class='b'>Novo nome:</div><div class='c'>\
 <input type='hidden' name='b' value='%d'>\
-<input type='text' name='n' maxlength='31' value='%s'>\
+<input type='text' name='n' maxlength='31' value='%s'></div><div class='b'>\
 <input type='submit' value='Salvar'>\
-</form>"),
+</div></form>"),
               button, (*i).name);
     send_html(r);
     free(r);
