@@ -40,6 +40,16 @@ background-color:#f8f8f8}\
 background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQflBxMQGDNbPF7PAAAA40lEQVQoz43RvU4CYRCF4Wd1WaJBIo00NhSa0EinlfRejom34S14F8TEzlKjrSbGgoLEn8TChg27LJ+FwLKGwlNMMfPOmclMZKHIuYaxSNuVpzLNoWOZHadu5GaObLkTq7n3EiN14trI87zpDew6c0uMkVcPPlW158CIDRDUtfTR1UVfS13gFwgKsaYeOjroaYoVwsIhVxMEVmJNvnBgKvFXiWkJ5GuBvAqESjlUgWytQ/avETGYSOZnj5YPSExKILdtbMj8nkNjibQEUvu+DPAIBmYa3i0t2y58K1Y22NR06YMfisxC2gggFqAAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjEtMDctMTlUMTY6MjQ6MjUrMDA6MDB3J0MuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIxLTA3LTE5VDE2OjI0OjI1KzAwOjAwBnr7kgAAAABJRU5ErkJggg==);\
 background-repeat:no-repeat;\
 background-color:#f8f8f8}\
+.a{\
+width:10%}\
+.b{\
+width:20%;\
+text-align:center}\
+.c{\
+width:60%}\
+.f{\
+display:flex;\
+flex-flow:row wrap}\
 </style>";
 
 const char html_footer[] PROGMEM = "\
@@ -70,36 +80,40 @@ void handle_root()
 #ifdef DEBUG_F
   Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(118 + (10 * 567) + 19 + 33 + 33 + 21);
+  char *r = (char *)_malloc(15 + (10 * (552 + 32)) + 15 + 24 + 42 + 24 + 12);
 
   int index = server.hasArg("i") ? atoi(server.arg("i").c_str()) : 0;
   int c = index;
 
-  //build table
-  strcpy_P(r, PSTR("<table><thead><tr><th>Name</th><th>Button</th><th>Edit</th><th>Up</th><th>Down</th><th>Delete</th></tr></thead><tbody>"));
+  //table
+  strcpy_P(r, PSTR("<div class='f'>"));
   for (auto i = ir_codes.cbegin() + index; (i != ir_codes.cend()) && (c < (index + 10)); ++i, c++)
   {
-    sprintf_P(r + strlen(r), PSTR("<tr><td data-label='Name'>%s</td>\
-<td data-label='Button'><input type='button' class='w' onclick='window.location.href=\"/p?b=%d\";'/></td>\
-<td data-label='Edit'><input type='button' class='e' onclick='window.location.href=\"/e?b=%d\";'/></td>\
-<td data-label='Up'><input type='button' class='u' onclick='window.location.href=\"/u?b=%d\";'/></td>\
-<td data-label='Down'><input type='button' class='d' onclick='window.location.href=\"/d?b=%d\";'/></td>\
-<td data-label='Delete'><input type='button' class='t' onclick='window.location.href=\"/t?b=%d\";'/></td>\
-</tr>"),
+    sprintf_P(r + strlen(r), PSTR("\
+<div class='a'></div>\
+<div style='width:40%%'>%s</div>\
+<div class='a'><input type='button' class='w' onclick='window.location.href=\"/p?b=%d\";'/></div>\
+<div class='a'><input type='button' class='e' onclick='window.location.href=\"/e?b=%d\";'/></div>\
+<div class='a'><input type='button' class='u' onclick='window.location.href=\"/u?b=%d\";'/></div>\
+<div class='a'><input type='button' class='d' onclick='window.location.href=\"/d?b=%d\";'/></div>\
+<div class='a'><input type='button' class='t' onclick='window.location.href=\"/t?b=%d\";'/></div>\
+"),
               (*i).name, c, c, c, c, c);
   }
-  strcat(r, "</tbody><tfoot><tr>");
 
   //nav
+  strcat(r, "<div class='b'>");
   if (index)
   {
-    sprintf(r + strlen(r), "<td><a href='/?i=%d'> < </a></td>", (index - 10));
+    sprintf(r + strlen(r), "<a href='/?i=%d'> < </a>", (index - 10));
   }
+  strcat(r, "</div><div class='c'></div><div class='b'>");
   if (((unsigned int)c < ir_codes.size()))
   {
-    sprintf(r + strlen(r), "<td><a href='/?i=%d'> > </a></td>", (index + 10));
+    sprintf(r + strlen(r), "<a href='/?i=%d'> > </a>", (index + 10));
   }
-  strcat(r, "</tr></tfoot></table>");
+  strcat(r, "</div></div>");
+
   send_html(r);
   free(r);
 }
