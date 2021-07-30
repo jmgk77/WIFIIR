@@ -42,14 +42,17 @@ background-repeat:no-repeat;\
 background-color:#f8f8f8}\
 .a{\
 width:10%}\
-.b{\
-width:20%;\
+.b,.g{\
+width:20%}\
+.g{\
 text-align:center}\
 .c{\
 width:60%}\
 .f{\
 display:flex;\
-flex-flow:row wrap}\
+flex-flow:row wrap;\
+padding:0;\
+overflow:hidden}\
 </style>";
 
 const char html_footer[] PROGMEM = "\
@@ -102,12 +105,12 @@ void handle_root()
   }
 
   //nav
-  strcat(r, "<div class='b'>");
+  strcat(r, "<div class='g'>");
   if (index)
   {
     sprintf(r + strlen(r), "<a href='/?i=%d'> < </a>", (index - 10));
   }
-  strcat(r, "</div><div class='c'></div><div class='b'>");
+  strcat(r, "</div><div class='c'></div><div class='g'>");
   if (((unsigned int)c < ir_codes.size()))
   {
     sprintf(r + strlen(r), "<a href='/?i=%d'> > </a>", (index + 10));
@@ -270,7 +273,7 @@ void handle_del()
 #endif
   ir_codes.erase(ir_codes.begin() + atoi(server.arg("b").c_str()));
   codes_save();
-  send_warning("Botão deletado!");
+  send_html("<script>document.location.href = '/'</script>");
 }
 
 void handle_config()
@@ -278,37 +281,34 @@ void handle_config()
 #ifdef DEBUG_F
   Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(1536);
-  strcpy_P(r, PSTR("<form action='/l' method='POST'>Apagar botões salvos:<input type='submit' value='Apagar'></form>\
-<form action='/b' method='POST'>Reiniciar WIFIIR:<input type='submit' value='Reiniciar'></form>\
-<form action='/r' method='POST'>Limpar configurações WIFI:<input type='submit' value='Limpar'></form>"));
+  char *r = (char *)_malloc(2048);
+  strcpy_P(r, PSTR("\
+<form class='f' action='/b' method='POST'><div class='b'>Reiniciar WIFIIR</div><div class='c'></div><div class='b'><input type='submit' value='Reiniciar'></div></form>\
+<form class='f' action='/r' method='POST'><div class='b'>Limpar configurações WIFI</div><div class='c'></div><div class='b'><input type='submit' value='Limpar'></div></form>\
+<form class='f' action='/l' method='POST'><div class='b'>Apagar botões salvos</div><div class='c'></div><div class='b'><input type='submit' value='Apagar'></div></form>"));
 #ifdef DEBUG_GENRNDBTN
-  strcat_P(r, PSTR("<form action='/y' method='POST'>\
-Gerar botões aleatórias:<input type='submit' value='Gerar'>\
-</form>"));
+  strcat_P(r, PSTR("\
+<form class='f' action='/y' method='POST'><div class='b'>Gerar botões aleatórias</div><div class='c'></div><div class='b'><input type='submit' value='Gerar'></div></form>"));
 #endif
 #ifdef SUPPORT_TELEGRAM
-  sprintf_P(r + strlen(r), PSTR("<form action='/k' method='POST'>\
-Telegram Token:<input type='checkbox' onchange='document.getElementById(\"k\").disabled=!this.checked;\
-document.getElementById(\"bk\").disabled=!this.checked;'>\
-<input type='text' id='k' name='k' disabled value='%s'/>\
-<input type='submit' id='bk' disabled value='Salvar'></form>"),
+  sprintf_P(r + strlen(r), PSTR("\
+<form class='f' action='/k' method='POST'><div class='b'>Telegram Token</div>\
+<div class='c'><input type='checkbox' onchange='document.getElementById(\"k\").disabled=!this.checked;document.getElementById(\"bk\").disabled=!this.checked;'>\
+<input type='text' id='k' name='k' disabled value='%s'/></div>\
+<div class='b'><input type='submit' id='bk' disabled value='Salvar'></div></form>"),
             bt_token.c_str());
-  if (!bt_token.isEmpty())
-  {
-    strcat_P(r, PSTR("<form action='/x' method='POST'>Gerenciar usuários:\
-<input type='submit' value='Gerenciar'></form>"));
+  strcat_P(r, PSTR("\
+<form class='f' action='/x' method='POST'><div class='b'>Gerenciar usuários</div><div class='c'></div><div class='b'><input type='submit' value='Gerenciar'></div></form>"));
 #ifdef DEBUG_GENRNDUSR
-    strcat_P(r, PSTR("<form action='/z' method='POST'>\
-Gerar usuários aleatórios:<input type='submit' value='Gerar'>\
-</form>"));
+  strcat_P(r, PSTR("\
+<form class='f' action='/z' method='POST'><div class='b'>Gerar usuários aleatórios</div><div class='c'></div><div class='b'><input type='submit' value='Gerar'></div></form>"));
 #endif
-  }
 #endif
 #ifdef SUPPORT_OTA
-  strcat_P(r, PSTR("<form method='POST' action='/update' enctype='multipart/form-data'>\
-Atualizar Firmware:<input type='file' accept='.bin,.bin.gz' name='firmware'>\
-<input type='submit' value='Update Firmware'></form>"));
+  strcat_P(r, PSTR("\
+<form class='f' method='POST' action='/update' enctype='multipart/form-data'>\
+<div class='b'>Atualizar Firmware</div><div class='c'><input type='file' accept='.bin,.bin.gz' name='firmware'></div><div class='b'>\
+<input type='submit' value='Atualizar'></div></form>"));
 #endif
   sprintf(r + strlen(r), "<br>Build Version: %s %s<br><br>", __DATE__, __TIME__);
   send_html(r);
