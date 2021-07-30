@@ -264,13 +264,13 @@ void handle_config()
 #ifdef DEBUG_F
   Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(1024);
+  char *r = (char *)_malloc(1536);
   strcpy_P(r, PSTR("<form action='/l' method='POST'>Apagar botões salvos:<input type='submit' value='Apagar'></form>\
 <form action='/b' method='POST'>Reiniciar WIFIIR:<input type='submit' value='Reiniciar'></form>\
 <form action='/r' method='POST'>Limpar configurações WIFI:<input type='submit' value='Limpar'></form>"));
-#ifdef DEBUG_GENRND
-  strcat_P(r, PSTR("<form action='/r' method='POST'>\
-Gerar entradas aleatórias:<input type='submit' value='Gen'>\
+#ifdef DEBUG_GENRNDBTN
+  strcat_P(r, PSTR("<form action='/y' method='POST'>\
+Gerar botões aleatórias:<input type='submit' value='Gerar'>\
 </form>"));
 #endif
 #ifdef SUPPORT_TELEGRAM
@@ -280,6 +280,16 @@ document.getElementById(\"bk\").disabled=!this.checked;'>\
 <input type='text' id='k' name='k' disabled value='%s'/>\
 <input type='submit' id='bk' disabled value='Salvar'></form>"),
             bt_token.c_str());
+  if (!bt_token.isEmpty())
+  {
+    strcat_P(r, PSTR("<form action='/x' method='POST'>Gerenciar usuários:\
+<input type='submit' value='Gerenciar'></form>"));
+#ifdef DEBUG_GENRNDUSR
+    strcat_P(r, PSTR("<form action='/z' method='POST'>\
+Gerar usuários aleatórios:<input type='submit' value='Gerar'>\
+</form>"));
+#endif
+  }
 #endif
 #ifdef SUPPORT_OTA
   strcat_P(r, PSTR("<form method='POST' action='/update' enctype='multipart/form-data'>\
@@ -291,8 +301,8 @@ Atualizar Firmware:<input type='file' accept='.bin,.bin.gz' name='firmware'>\
   free(r);
 }
 
-#ifdef DEBUG_GENRND
-void handle_random()
+#ifdef DEBUG_GENRNDBTN
+void handle_randombtn()
 {
 #ifdef DEBUG_F
   Serial.println(__func__);
@@ -300,7 +310,7 @@ void handle_random()
   IrResult tmp;
   memset(&tmp, 0, sizeof(IrResult));
   //gera botões aleatorios
-  for (int i = 1; i <= DEBUG_GENRND; i++)
+  for (int i = 1; i <= DEBUG_GENRNDBTN; i++)
   {
     itoa(i, tmp.name, 10);
     ir_codes.push_back(tmp);
@@ -311,6 +321,29 @@ void handle_random()
 #endif
 
 #ifdef SUPPORT_TELEGRAM
+
+#ifdef DEBUG_GENRNDUSR
+void handle_randomusr()
+{
+#ifdef DEBUG_F
+  Serial.println(__func__);
+#endif
+  BTUsers tmp;
+  //gera botões aleatorios
+  for (int i = 1; i <= DEBUG_GENRNDUSR; i++)
+  {
+    tmp.auth = false;
+    tmp.id = rand();
+    itoa(tmp.id, tmp.name, 16);
+#ifdef DEBUG
+    Serial.printf("BT_RND: %d\t%d\t%s\n", tmp.auth, tmp.id, tmp.name);
+#endif
+    bt_users.push_back(tmp);
+  }
+  send_warning("Usuarios geradas!");
+}
+#endif
+
 void handle_token()
 {
 #ifdef DEBUG_F
@@ -321,6 +354,51 @@ void handle_token()
   telegram_save();
   tb_kbd();
   send_warning("Token Salvo!");
+}
+
+void handle_userman()
+{
+#ifdef DEBUG_F
+  Serial.println(__func__);
+#endif
+  if (!server.hasArg("w"))
+  {
+    //build table
+    char *r = (char *)_malloc(73 + (96 * bt_users.size()) + 83);
+
+    strcpy_P(r, PSTR("<form action='/x' method='GET'>Usuários Telegram com acesso permitido<br>"));
+    int c = 0;
+    for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i, c++)
+    {
+      sprintf_P(r + strlen(r), PSTR("<input type='checkbox' name='%d' value='1' %s> %08x %s<br>"),
+                c,
+                (*i).auth ? "checked" : "",
+                (*i).id, (*i).name);
+    }
+    strcat_P(r, PSTR("<input name='w' type='hidden' value='1'><input type='submit' value='Salvar'></form>"));
+
+    send_html(r);
+    free(r);
+  }
+  else
+  {
+    //manage results
+    std::vector<BTUsers> tmp_users;
+    int c = 0;
+    for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i, c++)
+    {
+      BTUsers tmp;
+      tmp.auth = server.hasArg(String(c)) ? true : false;
+      tmp.id = (*i).id;
+      strcpy(tmp.name, (*i).name);
+      tmp_users.push_back(tmp);
+    }
+    bt_users.clear();
+    bt_users.swap(tmp_users);
+
+    telegram_users_save();
+    send_warning("Usuários salvos!");
+  }
 }
 #endif
 
@@ -387,11 +465,15 @@ void install_www_handlers()
   server.on("/u", handle_up);
   server.on("/d", handle_down);
   server.on("/t", handle_del);
-#ifdef DEBUG_GENRND
-  server.on("/r", handle_random);
+#ifdef DEBUG_GENRNDBTN
+  server.on("/y", handle_randombtn);
 #endif
 #ifdef SUPPORT_TELEGRAM
   server.on("/k", handle_token);
+  server.on("/x", handle_userman);
+#ifdef DEBUG_GENRNDUSR
+  server.on("/z", handle_randomusr);
+#endif
 #endif
   server.on("/s", handle_add2);
   server.on("/b", handle_reboot);
