@@ -19,7 +19,11 @@ void codes_save();
 #ifdef SUPPORT_TELEGRAM
 extern String bt_token;
 extern CTBot tb;
+extern std::vector<BTUsers> bt_users;
 
 void telegram_load();
 void telegram_save();
+
+void telegram_users_load();
+void telegram_users_save();
 #endif

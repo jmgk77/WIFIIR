@@ -14,7 +14,8 @@
 //#define DEBUG_MALLOC
 //#define DEBUG_F
 //#define DEBUG_CODES
-//#define DEBUG_GENRND 22
+//#define DEBUG_GENRNDBTN 4
+//#define DEBUG_GENRNDUSR 8
 
 #define SUPPORT_LITTLEFS
 #define SUPPORT_OTA
@@ -50,6 +51,15 @@ typedef struct
     char name[32];
     decode_results results;
 } IrResult;
+
+#ifdef SUPPORT_TELEGRAM
+typedef struct
+{
+    bool auth;
+    int id;
+    char name[32];
+} BTUsers;
+#endif
 
 #include "_debug.h"
 #include "persistence.h"

@@ -23,6 +23,8 @@ void codes_load()
   {
     IrResult tmp;
     int size = f.size();
+    //pre-aloca codigos
+    ir_codes.reserve((size / sizeof(IrResult)));
 #ifdef DEBUG
     Serial.printf("(%d)\n", (size / sizeof(IrResult)));
 #endif
@@ -130,4 +132,76 @@ void telegram_save()
 #endif
   }
 }
+
+void telegram_users_load()
+{
+#ifdef DEBUG
+  Serial.print("read users");
+#endif
+#ifdef SUPPORT_LITTLEFS
+  File f = LittleFS.open("/users.bin", "r");
+#else
+  File f = SPIFFS.open("/users.bin", "r");
+#endif
+  if (f)
+  {
+    BTUsers tmp;
+    int size = f.size();
+    //pre-aloca usuarios
+    ir_codes.reserve((size / sizeof(BTUsers)));
+#ifdef DEBUG
+    Serial.printf("(%d)\n", (size / sizeof(BTUsers)));
+#endif
+    for (int i = 0; i < size; i += sizeof(BTUsers))
+    {
+      f.read((uint8_t *)&tmp, sizeof(BTUsers));
+#ifdef DEBUG
+      Serial.printf("BT_LOAD: %d\t%d\t%s\n", tmp.auth, tmp.id, tmp.name);
+#endif
+      bt_users.push_back(tmp);
+    }
+  }
+  else
+  {
+#ifdef DEBUG
+    Serial.println("file open failed (read)");
+#endif
+  }
+}
+
+void telegram_users_save()
+{
+
+#ifdef DEBUG
+  Serial.println("write users...");
+#endif
+#ifdef SUPPORT_LITTLEFS
+  File f = LittleFS.open("/users.bin", "w");
+#else
+  File f = SPIFFS.open("/users.bin", "w");
+#endif
+  if (f)
+  {
+    //para cada entrada...
+    for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i)
+    {
+#ifdef DEBUG
+      Serial.printf("BT_SAVE: %d\t%d\t%s\n", (*i).auth, (*i).id, (*i).name);
+#endif
+      if ((*i).auth)
+      {
+        //so salva usuarios autorizados
+        f.write((const uint8_t *)&(*i).auth, sizeof(BTUsers));
+      }
+    }
+    f.close();
+  }
+  else
+  {
+#ifdef DEBUG
+    Serial.println("file open failed (write)");
+#endif
+  }
+}
+
 #endif

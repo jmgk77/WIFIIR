@@ -123,6 +123,7 @@ void setup()
   //setup telegram bot
 #ifdef SUPPORT_TELEGRAM
   telegram_load();
+  telegram_users_load();
   bt_setup();
   tb_kbd();
 #endif

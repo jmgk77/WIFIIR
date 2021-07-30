@@ -15,6 +15,8 @@ String bt_token;
 CTBotInlineKeyboard tkbd;
 CTBot tb;
 
+std::vector<BTUsers> bt_users;
+
 void bt_setup()
 {
     if (!bt_token.isEmpty())
@@ -61,10 +63,34 @@ void tb_kbd()
 #endif
             c++;
         }
-#ifdef DEBUG
-        Serial.println(tkbd.getJSON());
-#endif
     }
+}
+
+void bt_adduser(int id, const char *username)
+{
+    BTUsers tmp;
+    tmp.auth = false;
+    tmp.id = id;
+    strncpy(tmp.name, username, sizeof(tmp.name));
+    bt_users.push_back(tmp);
+#ifdef DEBUG
+    Serial.printf("BT_ADD: %d\t%d\t%s\n", tmp.auth, tmp.id, tmp.name);
+#endif
+}
+
+bool bt_check(int id)
+{
+    for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i)
+    {
+#ifdef DEBUG
+        Serial.printf("BT_CHECK: %d\t%d\t%s\n", (*i).auth, (*i).id, (*i).name);
+#endif
+        if ((*i).id == id)
+        {
+            return (*i).auth;
+        }
+    }
+    return false;
 }
 
 void bt_loop()
@@ -74,28 +100,37 @@ void bt_loop()
         TBMessage msg;
         if (tb.getNewMessage(msg) != CTBotMessageNoData)
         {
-#ifdef DEBUG
-            Serial.print("MSG");
-#endif
-            if (msg.messageType == CTBotMessageQuery)
+
+            if (bt_check(msg.sender.id))
             {
 #ifdef DEBUG
-                Serial.print(":CALLBACK");
+                Serial.print("MSG");
 #endif
-                int c = msg.callbackQueryData.toInt();
+                if (msg.messageType == CTBotMessageQuery)
+                {
 #ifdef DEBUG
-                Serial.print(":BUTTON:");
-                Serial.println(c);
+                    Serial.print(":CALLBACK");
 #endif
-                ir_send(c);
-                tb.endQuery(msg.callbackQueryID, "Botão enviado!");
+                    int c = msg.callbackQueryData.toInt();
+#ifdef DEBUG
+                    Serial.print(":BUTTON:");
+                    Serial.println(c);
+#endif
+                    ir_send(c);
+                    tb.endQuery(msg.callbackQueryID, "Botão enviado!");
+                }
+                else
+                {
+#ifdef DEBUG
+                    Serial.println(":OTHER");
+#endif
+                    tb.sendMessage(msg.sender.id, "Escolha...", tkbd);
+                }
             }
             else
             {
-#ifdef DEBUG
-                Serial.println(":OTHER");
-#endif
-                tb.sendMessage(msg.sender.id, "Escolha...", tkbd);
+                bt_adduser(msg.sender.id, msg.sender.firstName.c_str());
+                tb.sendMessage(msg.sender.id, "Não autorizado (acesse a interface WWW para conceder acesso)");
             }
         }
     }
