@@ -238,6 +238,17 @@ void move_button(int button, int offset)
   codes_save();
 }
 
+void _main_with_index(int b)
+{
+  //round to start of page
+  b /= 10;
+  b *= 10;
+  String s = "<script>document.location.href = '/?i=";
+  s += String(b);
+  s += "'</script>";
+  send_html(s.c_str());
+}
+
 void handle_up()
 {
 #ifdef DEBUG_F
@@ -249,7 +260,7 @@ void handle_up()
   {
     move_button(button, -1);
   }
-  send_html("<script>document.location.href = '/'</script>");
+  _main_with_index(button);
 }
 
 void handle_down()
@@ -263,7 +274,7 @@ void handle_down()
   {
     move_button(button, 1);
   }
-  send_html("<script>document.location.href = '/'</script>");
+  _main_with_index(button);
 }
 
 void handle_del()
@@ -271,9 +282,10 @@ void handle_del()
 #ifdef DEBUG_F
   Serial.println(__func__);
 #endif
-  ir_codes.erase(ir_codes.begin() + atoi(server.arg("b").c_str()));
+  int button = atoi(server.arg("b").c_str());
+  ir_codes.erase(ir_codes.begin() + button);
   codes_save();
-  send_html("<script>document.location.href = '/'</script>");
+  _main_with_index(button);
 }
 
 void handle_config()
