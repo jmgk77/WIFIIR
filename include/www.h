@@ -13,10 +13,13 @@
 
 extern ESP8266WebServer server;
 extern ESP8266WebServer server;
-extern bool decoding_onoff;
 extern IrResult irresult;
 extern IRsend irsend;
 extern WiFiManager wm;
+
+extern bool decoding_onoff;
+extern bool irin_timeout;
+extern void _end_ir();
 
 extern std::vector<IrResult> ir_codes;
 

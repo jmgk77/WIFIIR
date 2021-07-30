@@ -168,15 +168,16 @@ void handle_add2()
   Serial.println(__func__);
 #endif
   String button = server.hasArg("b") ? server.arg("b") : "";
-  //clicou add sem ter nome/codigo
-  if ((decoding_onoff) || (button.isEmpty()))
+  //clicou add sem ter nome/codigo (ou passou muito tempo)
+  if ((decoding_onoff) || (irin_timeout) || (button.isEmpty()))
   {
     //redirect to /add with "button" as param
     char *r = (char *)_malloc(512);
-    sprintf(r, "<script>document.location.href = '/a%s%s%s'</script>",
+    sprintf(r, "<script>document.location.href = '/a%s%s%s%s'</script>",
             button.isEmpty() ? "?e=1" : "?b=",
             button.isEmpty() ? "" : button.c_str(),
-            decoding_onoff ? "&n=1" : "");
+            decoding_onoff ? "&n=1" : "",
+            irin_timeout ? "&n=1" : "");
     send_html(r);
     free(r);
   }

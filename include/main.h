@@ -9,6 +9,10 @@
 
 #pragma once
 
+#define LED_PIN D5
+#define IR_LED_PIN D2
+#define IR_RECV_PIN D7
+
 #define DEBUG
 //#define DEBUG_SEND
 //#define DEBUG_MALLOC

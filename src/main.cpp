@@ -13,15 +13,16 @@
 
 #include "main.h"
 
-const uint16_t kIrLedPin = D2;
+const uint16_t kIrLedPin = IR_LED_PIN;
 IRsend irsend(kIrLedPin);
 
 //irRecv vars
-const uint16_t kRecvPin = D7;
+const uint16_t kRecvPin = IR_RECV_PIN;
 const uint16_t kCaptureBufferSize = 1024;
 const uint8_t kTimeout = 50;
 IRrecv irrecv(kRecvPin, kCaptureBufferSize, kTimeout, false);
 bool irin_enable = false;
+bool irin_timeout;
 
 //
 IrResult irresult;
@@ -37,9 +38,10 @@ ESP8266HTTPUpdateServer httpUpdater;
 bool decoding_onoff;
 
 //led blink vars
+#define IR_TIMEOUT 1000 * 60 * 3
 #define LED_BLINK_INTERVAL 500
-#define LED_PIN D5
 unsigned long old_millis = 0;
+unsigned long ir_started;
 int led_status = LOW;
 
 /*
@@ -140,6 +142,15 @@ void setup()
 ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝
 */
 
+void _end_ir()
+{
+  irrecv.disableIRIn();
+  led_status = LOW;
+  digitalWrite(LED_PIN, led_status);
+  irin_enable = false;
+  decoding_onoff = false;
+}
+
 void loop()
 {
   server.handleClient();
@@ -160,7 +171,20 @@ void loop()
     {
       irrecv.enableIRIn(); // Start up the IR receiver.
       irin_enable = true;
+      irin_timeout = false;
+      ir_started = millis();
     }
+    //check timeout
+    if ((millis() - ir_started) > IR_TIMEOUT)
+    {
+      //timeout
+      irin_timeout = true;
+#ifdef DEBUG
+      Serial.println("IR TIMEOUT");
+#endif
+      _end_ir();
+    }
+
     //decode
     if (irrecv.decode(&irresult.results))
     {
@@ -168,11 +192,7 @@ void loop()
       dump_ir(irresult);
 #endif
       //captura feita
-      irrecv.disableIRIn();
-      led_status = LOW;
-      digitalWrite(LED_PIN, led_status);
-      irin_enable = false;
-      decoding_onoff = false;
+      _end_ir();
     }
   }
 
