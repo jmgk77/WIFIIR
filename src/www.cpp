@@ -396,18 +396,21 @@ void handle_userman()
   if (!server.hasArg("w"))
   {
     //build table
-    char *r = (char *)_malloc(73 + (96 * bt_users.size()) + 83);
+    char *r = (char *)_malloc(42 + ((165 + 8 + 32 + 7) * bt_users.size()) + 181);
 
-    strcpy_P(r, PSTR("<form action='/x' method='GET'>Usuários Telegram com acesso permitido<br>"));
+    strcpy(r, "<form class='f' action='/x' method='POST'>");
     int c = 0;
     for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i, c++)
     {
-      sprintf_P(r + strlen(r), PSTR("<input type='checkbox' name='%d' value='1' %s> %08x %s<br>"),
+      sprintf_P(r + strlen(r), PSTR("<div class='b'></div><div class='b'><input type='checkbox' name='%d' value='1' %s></div>\
+<div class='b'>%08x</div><div class='b'>%s</div><div class='b'></div>"),
                 c,
                 (*i).auth ? "checked" : "",
                 (*i).id, (*i).name);
     }
-    strcat_P(r, PSTR("<input name='w' type='hidden' value='1'><input type='submit' value='Salvar'></form>"));
+    strcat_P(r, PSTR("<div class='b'></div><div class='b'></div>\
+<input class='b' name='w' type='hidden' value='1'><input type='submit' value='Salvar'>\
+<div class='b'></div><div class='b'></div></form>"));
 
     send_html(r);
     free(r);
