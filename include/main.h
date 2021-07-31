@@ -25,16 +25,30 @@
 #define SUPPORT_OTA
 #define SUPPORT_TELEGRAM
 
+#define SUPPORT_MDNS
+//#define SUPPORT_NETBIOS
+#define SUPPORT_LLMNR
+
 #ifndef DEBUG_MALLOC
 #define _malloc malloc
 #endif
 
 #include <Arduino.h>
 
+#include <ESP8266WiFi.h>
 #include <WiFiManager.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
+
+#ifdef SUPPORT_MDNS
 #include <ESP8266mDNS.h>
+#endif
+#ifdef SUPPORT_NETBIOS
+#include <ESP8266NetBIOS.h>
+#endif
+#ifdef SUPPORT_LLMNR
+#include <ESP8266LLMNR.h>
+#endif
 
 #ifdef SUPPORT_LITTLEFS
 #include <LittleFS.h>

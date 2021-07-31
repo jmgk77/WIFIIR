@@ -10,12 +10,13 @@
 #include "www.h"
 
 const char html_header[] PROGMEM = "\
-<!DOCTYPE html><html><head><title>WIFIIR</title>\
+<!DOCTYPE html><html>\
+<head><title>WIFIIR</title>\
 <meta charset='UTF-8'/>\
+<meta name='viewport' content='width=device-width, initial-scale=1'>\
 <link rel='shortcut icon' href='data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAABmJLR0QA/wD/AP+gvaeTAAABoklEQVRIie3UvWsUURQF8F+2VEyKsJgIiokRApZa+VGIKVRSmVJtAgr6B1gEO/VvsLDWNkbUCKKFhbZpwoYIClZ20WiXj7WYu8zsM7M7E6JVDlyYefecc997986wj11ioE9+FNO4gFM4hqHI/cQ3LOMDXuJ73Q1cwiI20a4Ym3iFi1UKnMCbGuZlsRheO+Iq1hLBFj5iTnZ9EzgYcTLW5vApuEXtOq6nRe4lxC087bWrHTCBZ4nPNu53COOx0El+wemCwRHclV1HC78jWniNO8Hp4Ex4FIsdh0HZtLTxFsMhGMFjbOjfk43gHg7tcHi1w/tQZxdNnEcj3q/gR4UCaazhcng0wrOpBLP+Huv3uIVJ+TBM4nbk0jGfLTMv4rPufk1V0Ezha0G3WqXQwyC/kx97FI+whF8RS8EdCU5TfroHVQrBgcLzzTAu68s6bpRoK2NG9+iXxTau9TJq9ErinPzH2wqzoYgZrERuAGdrHqILR/ECT2TfW4rByC0Ed88wHqbPMbaXxikW5H2ZryPs16MU7Zr8XWNMdpJ5//jq9vH/8QdSN6mUF/XpPQAAAABJRU5ErkJggg=='/>\
 <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css'>\
-<meta name='viewport' content='width=device-width, initial-scale=1'>\
-</head><style>\
+<style>\
 .w,.w:focus,.w:hover{\
 background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQflBxMQGDNbPF7PAAAA7klEQVQoz5XRPUuCAQDE8d+jUgRGWImbNFj2EEEIDS1NCdHiEkV9nfCrFEWLSwQ1tTi0BCFPL0u0iWEEQihqTVKUFd12x3+5O/5Q8MUl0PX2HUhaEJo2go4nkZrWABi1ZlnDtUctJGUtSrt0rh3I2vGsoi5txiSaHjRklKQcBPacuRBal1TXxKSMllORVcXAlBeb5py40jOGV3FLNtw5NhFg1oojI4ry4ui5daZjS9V9gJi+ebtqqhpIW7Fg342Y/qBuQR7k5EBeYdhQ20JEDoevmlI2Lqks9REmPgFtXSG62j99ESqhIvrtvMD/9A6R0TwXv22H+QAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMS0wNy0xOVQxNjoyNDoyNSswMDowMHcnQy4AAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjEtMDctMTlUMTY6MjQ6MjUrMDA6MDAGevuSAAAAAElFTkSuQmCC);\
 background-repeat:no-repeat;\
@@ -52,7 +53,7 @@ overflow:hidden}\
 .x{\
 margin:0 auto;\
 text-align:center}\
-</style>\
+</style></head>\
 <body><header class='sticky'>\
 <div class='x card warning'>\
 <p class='x'>WIFIIR - Controle remoto IR via WIFI</p>\
@@ -90,7 +91,11 @@ void handle_root()
   char *r = (char *)_malloc(15 + (10 * (552 + 32)) + 15 + 24 + 42 + 24 + 12);
 
   int index = server.hasArg("i") ? atoi(server.arg("i").c_str()) : 0;
-  index = (index < (int)ir_codes.size()) ? index : (index - 10);
+
+  //limit index 0-max
+  index = (index < (int)ir_codes.size()) ? index : ((int)ir_codes.size() - 10);
+  index = (index < 0) ? 0 : index;
+
   int c = index;
 
   //table

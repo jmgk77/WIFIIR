@@ -88,7 +88,53 @@ void setup()
 #endif
   }
 
-  MDNS.begin("WIFIIR");
+  //discovery protocols
+#ifdef SUPPORT_MDNS
+  if (MDNS.begin("WIFIIR"))
+  {
+#ifdef DEBUG
+    Serial.println("MDNS OK");
+#endif
+  }
+  else
+  {
+#ifdef DEBUG
+    Serial.println("MDNS NOK");
+#endif
+  }
+  MDNS.addService("http", "tcp", 80);
+#endif
+
+#ifdef SUPPORT_NETBIOS
+  if (NBNS.begin("WIFIIR"))
+  {
+#ifdef DEBUG
+    Serial.println("NETBIOS OK");
+#endif
+  }
+  else
+  {
+#ifdef DEBUG
+    Serial.println("NETBIOS NOK");
+#endif
+  }
+#endif
+
+#ifdef SUPPORT_LLMNR
+  if (LLMNR.begin("WIFIIR"))
+  {
+#ifdef DEBUG
+    Serial.println("LLMNR OK");
+#endif
+  }
+  else
+  {
+#ifdef DEBUG
+    Serial.println("LLMNR NOK");
+#endif
+  }
+#endif
+
 #ifdef SUPPORT_OTA
   httpUpdater.setup(&server, "/update");
 #endif
@@ -96,7 +142,6 @@ void setup()
   install_www_handlers();
 
   server.begin();
-  MDNS.addService("http", "tcp", 80);
 
   //blinking LED setup
   decoding_onoff = false;
@@ -154,7 +199,9 @@ void _end_ir()
 void loop()
 {
   server.handleClient();
+#ifdef SUPPORT_MDNS
   MDNS.update();
+#endif
 
   //lendo codigo?
   if (decoding_onoff)
