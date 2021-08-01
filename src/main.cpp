@@ -134,6 +134,20 @@ void setup()
 #endif
   }
 #endif
+#ifdef SUPPORT_SSDP
+  SSDPDevice.setName("WIFIIR");
+  SSDPDevice.setDeviceType("urn:schemas-upnp-org:device:WIFIIR:1");
+  SSDPDevice.setSchemaURL("description.xml");
+  SSDPDevice.setSerialNumber(ESP.getChipId());
+  SSDPDevice.setURL("/");
+  SSDPDevice.setModelName("WIFIIR");
+  SSDPDevice.setModelNumber("1");
+  SSDPDevice.setManufacturer("JMGK");
+  SSDPDevice.setManufacturerURL("http://www.jmgk.com.br/");
+#ifdef DEBUG
+    Serial.println("SSDP OK");
+#endif
+#endif
 
 #ifdef SUPPORT_OTA
   httpUpdater.setup(&server, "/update");
@@ -201,6 +215,9 @@ void loop()
   server.handleClient();
 #ifdef SUPPORT_MDNS
   MDNS.update();
+#endif
+#ifdef SUPPORT_SSDP
+  SSDPDevice.handleClient();
 #endif
 
   //lendo codigo?

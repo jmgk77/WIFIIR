@@ -520,5 +520,9 @@ void install_www_handlers()
   server.on("/r", handle_reset);
   server.on("/g", handle_config);
   server.on("/l", handle_clear);
+#ifdef SUPPORT_SSDP
+  server.on("/description.xml", HTTP_GET, []()
+            { SSDPDevice.schema(server.client()); });
+#endif
   server.onNotFound(handle_404);
 }

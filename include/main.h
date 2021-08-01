@@ -28,6 +28,7 @@
 #define SUPPORT_MDNS
 //#define SUPPORT_NETBIOS
 #define SUPPORT_LLMNR
+#define SUPPORT_SSDP
 
 #ifndef DEBUG_MALLOC
 #define _malloc malloc
@@ -86,3 +87,7 @@ typedef struct
 #include "telegram.h"
 #endif
 #include "ir.h"
+
+#ifdef SUPPORT_SSDP
+#include "SSDPDevice.h"
+#endif
