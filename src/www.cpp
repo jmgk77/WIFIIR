@@ -522,7 +522,7 @@ void install_www_handlers()
   server.on("/l", handle_clear);
 #ifdef SUPPORT_SSDP
   server.on("/description.xml", HTTP_GET, []()
-            { SSDPDevice.schema(server.client()); });
+            { SSDP_esp8266.schema(server.client()); });
 #endif
   server.onNotFound(handle_404);
 }

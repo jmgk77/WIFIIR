@@ -50,6 +50,9 @@
 #ifdef SUPPORT_LLMNR
 #include <ESP8266LLMNR.h>
 #endif
+#ifdef SUPPORT_SSDP
+#include <SSDP_esp8266.h>
+#endif
 
 #ifdef SUPPORT_LITTLEFS
 #include <LittleFS.h>
@@ -87,7 +90,3 @@ typedef struct
 #include "telegram.h"
 #endif
 #include "ir.h"
-
-#ifdef SUPPORT_SSDP
-#include "SSDPDevice.h"
-#endif

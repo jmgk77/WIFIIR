@@ -135,15 +135,15 @@ void setup()
   }
 #endif
 #ifdef SUPPORT_SSDP
-  SSDPDevice.setName("WIFIIR");
-  SSDPDevice.setDeviceType("urn:schemas-upnp-org:device:WIFIIR:1");
-  SSDPDevice.setSchemaURL("description.xml");
-  SSDPDevice.setSerialNumber(ESP.getChipId());
-  SSDPDevice.setURL("/");
-  SSDPDevice.setModelName("WIFIIR");
-  SSDPDevice.setModelNumber("1");
-  SSDPDevice.setManufacturer("JMGK");
-  SSDPDevice.setManufacturerURL("http://www.jmgk.com.br/");
+  SSDP_esp8266.setName("WIFIIR");
+  SSDP_esp8266.setDeviceType("urn:schemas-upnp-org:device:WIFIIR:1");
+  SSDP_esp8266.setSchemaURL("description.xml");
+  SSDP_esp8266.setSerialNumber(ESP.getChipId());
+  SSDP_esp8266.setURL("/");
+  SSDP_esp8266.setModelName("WIFIIR");
+  SSDP_esp8266.setModelNumber("1");
+  SSDP_esp8266.setManufacturer("JMGK");
+  SSDP_esp8266.setManufacturerURL("http://www.jmgk.com.br/");
 #ifdef DEBUG
     Serial.println("SSDP OK");
 #endif
@@ -217,7 +217,7 @@ void loop()
   MDNS.update();
 #endif
 #ifdef SUPPORT_SSDP
-  SSDPDevice.handleClient();
+  SSDP_esp8266.handleClient();
 #endif
 
   //lendo codigo?
