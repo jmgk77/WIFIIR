@@ -76,6 +76,8 @@ void send_html(const char *h)
 #endif
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.send_P(200, "text/html", html_header);
+  String s = "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
+  server.sendContent("<div class='x card'><p class='x'>" + s + "</p></div><br>");
   server.sendContent(h);
   server.sendContent_P(html_footer);
 #ifdef DEBUG_SEND
@@ -305,7 +307,12 @@ void handle_config()
   Serial.println(__func__);
 #endif
   char *r = (char *)_malloc(2048);
-  strcpy_P(r, PSTR("\
+  sprintf_P(r, PSTR("\
+<form class='f' action='/w' method='POST'><div class='b'>Device name</div>\
+<div class='c'><input type='text' name='n' maxlength='31' value='%s'/></div>\
+<div class='b'><input type='submit' value='Salvar'></div></form>"),
+            wifiir_subname.c_str());
+  strcat_P(r, PSTR("\
 <form class='f' action='/b' method='POST'><div class='b'>Reiniciar WIFIIR</div><div class='c'></div><div class='b'><input type='submit' value='Reiniciar'></div></form>\
 <form class='f' action='/r' method='POST'><div class='b'>Limpar configurações WIFI</div><div class='c'></div><div class='b'><input type='submit' value='Limpar'></div></form>\
 <form class='f' action='/l' method='POST'><div class='b'>Apagar botões salvos</div><div class='c'></div><div class='b'><input type='submit' value='Apagar'></div></form>"));
@@ -391,6 +398,16 @@ void handle_token()
   telegram_save();
   tb_kbd();
   send_warning("Token Salvo!");
+}
+
+void handle_name()
+{
+#ifdef DEBUG_F
+  Serial.println(__func__);
+#endif
+  wifiir_subname = server.hasArg("n") ? server.arg("n") : "";
+  wifiir_name_save();
+  send_warning("Nome Salvo!");
 }
 
 void handle_userman()
@@ -493,11 +510,73 @@ void handle_404()
   send_html("<p>Not found!</p>");
 }
 
+#ifdef DEBUG_FS
+void handle_files()
+{
+  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  //download
+  if (server.hasArg("n"))
+  {
+    String fname = server.arg("n");
+    char buf[512];
+    int r;
+    server.send_P(200, "application/octet-stream", "");
+#ifdef SUPPORT_LITTLEFS
+    File f = LittleFS.open(fname.c_str(), "r");
+#else
+    File f = SPIFFS.open(fname.c_str(), "r");
+#endif
+    do
+    {
+      r = f.read((uint8_t *)&buf, sizeof(buf));
+      server.sendContent(buf, r);
+    } while (r == sizeof(buf));
+    f.close();
+  }
+  else if (server.hasArg("x"))
+  //delete
+  {
+    String fname = server.arg("x");
+#ifdef SUPPORT_LITTLEFS
+    LittleFS.remove(fname.c_str());
+#else
+    SPIFFS.remove(fname.c_str());
+#endif
+    server.send_P(200, "text/html", "<script>document.location.href = '/files'</script>");
+  }
+  else
+  //dir list
+  {
+    String s;
+    char buf[16];
+    server.send_P(200, "text/html", "");
+#ifdef SUPPORT_LITTLEFS
+    Dir dir = LittleFS.openDir("/");
+#else
+    Dir dir = SPIFFS.openDir("/");
+#endif
+    while (dir.next())
+    {
+      s = "<a download='" + dir.fileName() + "' href='files?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
+      itoa(dir.fileSize(), buf, 10);
+      s += "    (" + String(buf) + ")    ";
+      s += "<a href='files?x=" + dir.fileName() + "'>x</a><br>";
+      server.sendContent(s.c_str());
+    }
+    server.sendContent("<br><br><a href='/'>BACK</a><br>");
+  }
+}
+#endif
+
 void install_www_handlers()
 {
 #ifdef DEBUG_F
   Serial.println(__func__);
 #endif
+
+  //abCdeFgHIJklMNOpQrstuVwxyz
+  //description.xml
+  //files
   server.on("/", handle_root);
   server.on("/a", handle_add);
   server.on("/p", handle_press);
@@ -520,9 +599,13 @@ void install_www_handlers()
   server.on("/r", handle_reset);
   server.on("/g", handle_config);
   server.on("/l", handle_clear);
+  server.on("/w", handle_name);
 #ifdef SUPPORT_SSDP
   server.on("/description.xml", HTTP_GET, []()
             { SSDP_esp8266.schema(server.client()); });
+#endif
+#ifdef DEBUG_FS
+  server.on("/files", handle_files);
 #endif
   server.onNotFound(handle_404);
 }

@@ -44,6 +44,9 @@ unsigned long old_millis = 0;
 unsigned long ir_started;
 int led_status = LOW;
 
+//device name
+String wifiir_subname;
+
 /*
 ███████╗███████╗████████╗██╗   ██╗██████╗
 ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗
@@ -69,7 +72,7 @@ void setup()
   wm.setDebugOutput(false);
 #endif
 
-#ifdef DEBUG
+#ifdef DEBUG_ESP
   dump_esp8266();
 #endif
 
@@ -88,9 +91,42 @@ void setup()
 #endif
   }
 
+#ifdef SUPPORT_OTA
+  httpUpdater.setup(&server, "/update");
+#endif
+
+  install_www_handlers();
+
+  server.begin();
+
+  //blinking LED setup
+  decoding_onoff = false;
+  pinMode(LED_PIN, OUTPUT);
+  led_status = LOW;
+  digitalWrite(LED_PIN, led_status);
+
+#ifdef SUPPORT_LITTLEFS
+  if (!LittleFS.begin())
+#else
+  if (!SPIFFS.begin())
+#endif
+  {
+#ifdef DEBUG
+    Serial.println("An Error has occurred while mounting LittleFS");
+#endif
+  }
+
+#ifdef DEBUG_ESP
+  dump_fs();
+#endif
+
   //discovery protocols
+  wifiir_name_load();
+  String s = "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
+  Serial.printf("Net name: %s\n", s.c_str());
+
 #ifdef SUPPORT_MDNS
-  if (MDNS.begin("WIFIIR"))
+  if (MDNS.begin(s.c_str()))
   {
 #ifdef DEBUG
     Serial.println("MDNS OK");
@@ -106,7 +142,7 @@ void setup()
 #endif
 
 #ifdef SUPPORT_NETBIOS
-  if (NBNS.begin("WIFIIR"))
+  if (NBNS.begin(s.c_str()))
   {
 #ifdef DEBUG
     Serial.println("NETBIOS OK");
@@ -121,7 +157,7 @@ void setup()
 #endif
 
 #ifdef SUPPORT_LLMNR
-  if (LLMNR.begin("WIFIIR"))
+  if (LLMNR.begin(s.c_str()))
   {
 #ifdef DEBUG
     Serial.println("LLMNR OK");
@@ -135,7 +171,7 @@ void setup()
   }
 #endif
 #ifdef SUPPORT_SSDP
-  SSDP_esp8266.setName("WIFIIR");
+  SSDP_esp8266.setName(s.c_str());
   SSDP_esp8266.setDeviceType("urn:schemas-upnp-org:device:WIFIIR:1");
   SSDP_esp8266.setSchemaURL("description.xml");
   SSDP_esp8266.setSerialNumber(ESP.getChipId());
@@ -145,40 +181,11 @@ void setup()
   SSDP_esp8266.setManufacturer("JMGK");
   SSDP_esp8266.setManufacturerURL("http://www.jmgk.com.br/");
 #ifdef DEBUG
-    Serial.println("SSDP OK");
+  Serial.println("SSDP OK");
 #endif
 #endif
-
-#ifdef SUPPORT_OTA
-  httpUpdater.setup(&server, "/update");
-#endif
-
-  install_www_handlers();
-
-  server.begin();
-
-  //blinking LED setup
-  decoding_onoff = false;
-  pinMode(LED_PIN, OUTPUT);
-  led_status = LOW;
-  digitalWrite(LED_PIN, led_status);
 
   //carrega botões salvos
-#ifdef SUPPORT_LITTLEFS
-  if (!LittleFS.begin())
-#else
-  if (!SPIFFS.begin())
-#endif
-  {
-#ifdef DEBUG
-    Serial.println("An Error has occurred while mounting LittleFS");
-#endif
-  }
-
-#ifdef DEBUG
-  dump_fs();
-#endif
-
   codes_load();
 
   //setup telegram bot

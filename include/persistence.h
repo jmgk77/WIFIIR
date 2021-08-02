@@ -27,3 +27,7 @@ void telegram_save();
 void telegram_users_load();
 void telegram_users_save();
 #endif
+
+extern String wifiir_subname;
+void wifiir_name_load();
+void wifiir_name_save();

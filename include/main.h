@@ -20,6 +20,8 @@
 //#define DEBUG_CODES
 //#define DEBUG_GENRNDBTN 4
 //#define DEBUG_GENRNDUSR 8
+//#define DEBUG_ESP
+#define DEBUG_FS
 
 #define SUPPORT_LITTLEFS
 #define SUPPORT_OTA
