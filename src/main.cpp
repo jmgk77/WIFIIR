@@ -123,7 +123,9 @@ void setup()
   //discovery protocols
   wifiir_name_load();
   String s = "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
-  Serial.printf("Net name: %s\n", s.c_str());
+#ifdef DEBUG
+  Serial.printf("Discovery Protocols Name: %s\n", s.c_str());
+#endif
 
 #ifdef SUPPORT_MDNS
   if (MDNS.begin(s.c_str()))

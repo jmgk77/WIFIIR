@@ -10,7 +10,7 @@
 #include "www.h"
 
 const char html_header[] PROGMEM = "\
-<!DOCTYPE html><html>\
+<!DOCTYPE html><html lang='pt-br'>\
 <head><title>WIFIIR</title>\
 <meta charset='UTF-8'/>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -520,7 +520,7 @@ void handle_files()
     String fname = server.arg("n");
     char buf[512];
     int r;
-    server.send_P(200, "application/octet-stream", "");
+    server.send(200, "application/octet-stream", "");
 #ifdef SUPPORT_LITTLEFS
     File f = LittleFS.open(fname.c_str(), "r");
 #else
@@ -542,14 +542,14 @@ void handle_files()
 #else
     SPIFFS.remove(fname.c_str());
 #endif
-    server.send_P(200, "text/html", "<script>document.location.href = '/files'</script>");
+    server.send(200, "text/html", "<script>document.location.href = '/files'</script>");
   }
   else
   //dir list
   {
     String s;
     char buf[16];
-    server.send_P(200, "text/html", "");
+    server.send(200, "text/html", "");
 #ifdef SUPPORT_LITTLEFS
     Dir dir = LittleFS.openDir("/");
 #else
