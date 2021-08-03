@@ -333,12 +333,12 @@ void dump_ir(IrResult irresult)
     default:
         s = "ERROR!";
     }
-    Serial.print("PROTOCOL: ");
-    Serial.println(s.c_str());
-    Serial.print("VALUE: ");
-    Serial.println(irresult.results.value);
-    Serial.print("SIZE: ");
-    Serial.println(irresult.results.bits);
+    _Serial.print("PROTOCOL: ");
+    _Serial.println(s.c_str());
+    _Serial.print("VALUE: ");
+    _Serial.println(irresult.results.value);
+    _Serial.print("SIZE: ");
+    _Serial.println(irresult.results.bits);
 }
 
 void _hexdump(void *ptr, int buflen)
@@ -349,28 +349,28 @@ void _hexdump(void *ptr, int buflen)
     for (i = 0; i < buflen; i += 16)
     {
         sprintf(s, "%06x: ", i);
-        Serial.print(s);
+        _Serial.print(s);
         for (j = 0; j < 16; j++)
             if (i + j < buflen)
             {
                 sprintf(s, "%02x ", buf[i + j]);
-                Serial.print(s);
+                _Serial.print(s);
             }
             else
             {
                 sprintf(s, "   ");
-                Serial.print(s);
+                _Serial.print(s);
             }
         sprintf(s, " ");
-        Serial.print(s);
+        _Serial.print(s);
         for (j = 0; j < 16; j++)
             if (i + j < buflen)
             {
                 sprintf(s, "%c", isprint(buf[i + j]) ? buf[i + j] : '.');
-                Serial.print(s);
+                _Serial.print(s);
             }
         sprintf(s, "\n");
-        Serial.print(s);
+        _Serial.print(s);
     }
 }
 
@@ -382,31 +382,31 @@ void dump_fs()
 #else
     SPIFFS.info(fs_info);
 #endif
-    Serial.printf("FS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\nmaxOpenFiles: %d\nmaxPathLength: %d\n",
+    _Serial.printf("FS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\nmaxOpenFiles: %d\nmaxPathLength: %d\n",
                   fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
 }
 
 void dump_esp8266()
 {
-    Serial.println("ESP8266_INFO");
-    Serial.print("ESP.getBootMode(): ");
-    Serial.println(ESP.getBootMode());
-    Serial.print("ESP.getSdkVersion(): ");
-    Serial.println(ESP.getSdkVersion());
-    Serial.print("ESP.getBootVersion(): ");
-    Serial.println(ESP.getBootVersion());
-    Serial.print("ESP.getChipId(): ");
-    Serial.println(ESP.getChipId());
-    Serial.print("ESP.getFlashChipSize(): ");
-    Serial.println(ESP.getFlashChipSize());
-    Serial.print("ESP.getFlashChipRealSize(): ");
-    Serial.println(ESP.getFlashChipRealSize());
-    Serial.print("ESP.getFlashChipSizeByChipId(): ");
-    Serial.println(ESP.getFlashChipSizeByChipId());
-    Serial.print("ESP.getFlashChipId(): ");
-    Serial.println(ESP.getFlashChipId());
-    Serial.print("ESP.getFreeHeap(): ");
-    Serial.println(ESP.getFreeHeap());
+    _Serial.println("ESP8266_INFO");
+    _Serial.print("ESP.getBootMode(): ");
+    _Serial.println(ESP.getBootMode());
+    _Serial.print("ESP.getSdkVersion(): ");
+    _Serial.println(ESP.getSdkVersion());
+    _Serial.print("ESP.getBootVersion(): ");
+    _Serial.println(ESP.getBootVersion());
+    _Serial.print("ESP.getChipId(): ");
+    _Serial.println(ESP.getChipId());
+    _Serial.print("ESP.getFlashChipSize(): ");
+    _Serial.println(ESP.getFlashChipSize());
+    _Serial.print("ESP.getFlashChipRealSize(): ");
+    _Serial.println(ESP.getFlashChipRealSize());
+    _Serial.print("ESP.getFlashChipSizeByChipId(): ");
+    _Serial.println(ESP.getFlashChipSizeByChipId());
+    _Serial.print("ESP.getFlashChipId(): ");
+    _Serial.println(ESP.getFlashChipId());
+    _Serial.print("ESP.getFreeHeap(): ");
+    _Serial.println(ESP.getFreeHeap());
 }
 
 #ifdef DEBUG_MALLOC
@@ -416,14 +416,18 @@ void *_malloc(size_t size)
     uint16_t max;
     uint8_t frag;
     ESP.getHeapStats(&free, &max, &frag);
-    Serial.printf("MALLOC: asked %d (free: %5d - max: %5d - frag: %3d%%)\n", size, free, max, frag);
+    _Serial.printf("MALLOC: asked %d (free: %5d - max: %5d - frag: %3d%%)\n", size, free, max, frag);
     void *m = malloc(size);
     if (!m)
     {
-        Serial.println("MALLOC ERROR!");
+        _Serial.println("MALLOC ERROR!");
     }
     return m;
 }
+#endif
+
+#ifdef DEBUG_SERIAL2FILE
+Serial2File _Serial;
 #endif
 
 #endif

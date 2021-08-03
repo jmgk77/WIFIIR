@@ -18,3 +18,62 @@ void dump_fs();
 void dump_esp8266();
 void *_malloc(size_t size);
 #endif
+
+#ifdef DEBUG_SERIAL2FILE
+class Serial2File
+{
+public:
+    void begin(int x)
+    {
+        Serial.begin(x);
+    }
+    void setDebugOutput(bool x)
+    {
+        Serial.setDebugOutput(x);
+    }
+    void print(const char *t)
+    {
+        _start();
+        f.print(t);
+        _end();
+        Serial.print(t);
+    }
+    void println(uint64_t x)
+    {
+        _start();
+        f.println(x);
+        _end();
+        Serial.println(x);
+    }
+    void println(const char *t)
+    {
+        _start();
+        f.println(t);
+        _end();
+        Serial.println(t);
+    }
+    void printf(const char *format, ...)
+    {
+        char buf[1024];
+        va_list myargs;
+        va_start(myargs, format);
+        vsnprintf((char *)buf, sizeof(buf), format, myargs);
+        print(buf);
+        va_end(myargs);
+    }
+
+private:
+    File f;
+    void _start()
+    {
+        f = LittleFS.open("/log.txt", "a");
+    }
+    void _end()
+    {
+        f.close();
+    }
+};
+
+extern Serial2File _Serial;
+
+#endif

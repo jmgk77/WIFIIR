@@ -12,7 +12,7 @@
 void codes_load()
 {
 #ifdef DEBUG
-  Serial.println("CODES::LOAD");
+  _Serial.println("CODES::LOAD");
 #endif
 #ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/codes.bin", "r");
@@ -26,13 +26,13 @@ void codes_load()
     //pre-aloca codigos
     ir_codes.reserve((size / sizeof(IrResult)));
 #ifdef DEBUG
-    Serial.printf("(%d)\n", (size / sizeof(IrResult)));
+    _Serial.printf("(%d)\n", (size / sizeof(IrResult)));
 #endif
     for (int i = 0; i < size; i += sizeof(IrResult))
     {
       f.read((uint8_t *)&tmp, sizeof(IrResult));
 #ifdef DEBUG_CODES
-      Serial.printf(resultToHumanReadableBasic(&tmp.results).c_str());
+      _Serial.printf(resultToHumanReadableBasic(&tmp.results).c_str());
       _hexdump((void *)&tmp, sizeof(IrResult));
 #endif
       ir_codes.push_back(tmp);
@@ -41,7 +41,7 @@ void codes_load()
   else
   {
 #ifdef DEBUG
-    Serial.println("file open failed");
+    _Serial.println("file open failed");
 #endif
   }
 }
@@ -49,7 +49,7 @@ void codes_load()
 void codes_save()
 {
 #ifdef DEBUG
-  Serial.println("CODES::SAVE");
+  _Serial.println("CODES::SAVE");
 #endif
 #ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/codes.bin", "w");
@@ -62,7 +62,7 @@ void codes_save()
     for (auto i = ir_codes.cbegin(); i != ir_codes.cend(); ++i)
     {
 #ifdef DEBUG_CODES
-      Serial.printf(resultToHumanReadableBasic(&(*i).results).c_str());
+      _Serial.printf(resultToHumanReadableBasic(&(*i).results).c_str());
       _hexdump((void *)(*i).name, sizeof(IrResult));
 #endif
       f.write((const uint8_t *)(*i).name, sizeof(IrResult));
@@ -72,7 +72,7 @@ void codes_save()
   else
   {
 #ifdef DEBUG
-    Serial.println("file open failed");
+    _Serial.println("file open failed");
 #endif
   }
   //reconstroi teclado telegram
@@ -85,7 +85,7 @@ void codes_save()
 void telegram_load()
 {
 #ifdef DEBUG
-  Serial.println("TOKEN::LOAD");
+  _Serial.println("TOKEN::LOAD");
 #endif
   bt_token = "";
 #ifdef SUPPORT_LITTLEFS
@@ -103,7 +103,7 @@ void telegram_load()
   else
   {
 #ifdef DEBUG
-    Serial.println("file open failed");
+    _Serial.println("file open failed");
 #endif
   }
 }
@@ -111,7 +111,7 @@ void telegram_load()
 void telegram_save()
 {
 #ifdef DEBUG
-  Serial.println("TOKEN::SAVE");
+  _Serial.println("TOKEN::SAVE");
 #endif
 #ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/token.txt", "w");
@@ -128,7 +128,7 @@ void telegram_save()
   else
   {
 #ifdef DEBUG
-    Serial.println("file open failed");
+    _Serial.println("file open failed");
 #endif
   }
 }
@@ -136,7 +136,7 @@ void telegram_save()
 void telegram_users_load()
 {
 #ifdef DEBUG
-  Serial.println("USERS::LOAD");
+  _Serial.println("USERS::LOAD");
 #endif
 #ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/users.bin", "r");
@@ -150,13 +150,13 @@ void telegram_users_load()
     //pre-aloca usuarios
     ir_codes.reserve((size / sizeof(BTUsers)));
 #ifdef DEBUG
-    Serial.printf("(%d)\n", (size / sizeof(BTUsers)));
+    _Serial.printf("(%d)\n", (size / sizeof(BTUsers)));
 #endif
     for (int i = 0; i < size; i += sizeof(BTUsers))
     {
       f.read((uint8_t *)&tmp, sizeof(BTUsers));
 #ifdef DEBUG
-      Serial.printf("BT_LOAD: %d\t%d\t%s\n", tmp.auth, tmp.id, tmp.name);
+      _Serial.printf("BT_LOAD: %d\t%d\t%s\n", tmp.auth, tmp.id, tmp.name);
 #endif
       bt_users.push_back(tmp);
     }
@@ -164,7 +164,7 @@ void telegram_users_load()
   else
   {
 #ifdef DEBUG
-    Serial.println("file open failed");
+    _Serial.println("file open failed");
 #endif
   }
 }
@@ -173,7 +173,7 @@ void telegram_users_save()
 {
 
 #ifdef DEBUG
-  Serial.println("USERS::SAVE");
+  _Serial.println("USERS::SAVE");
 #endif
 #ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/users.bin", "w");
@@ -186,7 +186,7 @@ void telegram_users_save()
     for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i)
     {
 #ifdef DEBUG
-      Serial.printf("BT_SAVE: %d\t%d\t%s\n", (*i).auth, (*i).id, (*i).name);
+      _Serial.printf("BT_SAVE: %d\t%d\t%s\n", (*i).auth, (*i).id, (*i).name);
 #endif
       if ((*i).auth)
       {
@@ -199,7 +199,7 @@ void telegram_users_save()
   else
   {
 #ifdef DEBUG
-    Serial.println("file open failed");
+    _Serial.println("file open failed");
 #endif
   }
 }
@@ -209,7 +209,7 @@ void telegram_users_save()
 void wifiir_name_load()
 {
 #ifdef DEBUG
-  Serial.println("NAME::LOAD");
+  _Serial.println("NAME::LOAD");
 #endif
 #ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/name.txt", "r");
@@ -223,13 +223,13 @@ void wifiir_name_load()
     f.read((uint8_t *)&tmp, sizeof(tmp) - 1);
     wifiir_subname = String(tmp);
 #ifdef DEBUG
-    Serial.printf("WIFIIR subname: %s\n", (uint8_t *)&tmp);
+    _Serial.printf("Subname: %s\n", (uint8_t *)&tmp);
 #endif
   }
   else
   {
 #ifdef DEBUG
-    Serial.println("file open failed");
+    _Serial.println("file open failed");
 #endif
   }
 }
@@ -237,7 +237,7 @@ void wifiir_name_load()
 void wifiir_name_save()
 {
 #ifdef DEBUG
-  Serial.println("NAME::SAVE");
+  _Serial.println("NAME::SAVE");
 #endif
 #ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/name.txt", "w");
@@ -251,13 +251,13 @@ void wifiir_name_save()
     f.write((char *)&tmp, strlen(tmp));
     f.close();
 #ifdef DEBUG
-    Serial.printf("WIFIIR subname: %s (%d)\n", (char *)&tmp, strlen(tmp));
+    _Serial.printf("Subname: %s (%d)\n", (char *)&tmp, strlen(tmp));
 #endif
   }
   else
   {
 #ifdef DEBUG
-    Serial.println("file open failed");
+    _Serial.println("file open failed");
 #endif
   }
 }

@@ -25,21 +25,21 @@ void bt_setup()
         //tb.useDNS(true);
         //tb.setFingerprint(0);
 #ifdef DEBUG
-        Serial.print("BOT ");
+        _Serial.print("BOT ");
         if (tb.testConnection())
         {
-            Serial.println("OK");
+            _Serial.println("OK");
         }
         else
         {
-            Serial.println("NOK");
+            _Serial.println("NOK");
         }
 #endif
     }
     else
     {
 #ifdef DEBUG
-        Serial.println("NO BOT");
+        _Serial.println("NO BOT");
 #endif
     }
 }
@@ -74,7 +74,7 @@ void bt_adduser(int id, const char *username)
     strncpy(tmp.name, username, sizeof(tmp.name));
     bt_users.push_back(tmp);
 #ifdef DEBUG
-    Serial.printf("BT_ADD: %d\t%d\t%s\n", tmp.auth, tmp.id, tmp.name);
+    _Serial.printf("BT_ADD: %d\t%d\t%s\n", tmp.auth, tmp.id, tmp.name);
 #endif
 }
 
@@ -83,7 +83,7 @@ bool bt_check(int id)
     for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i)
     {
 #ifdef DEBUG
-        Serial.printf("BT_CHECK: %d\t%d\t%s\n", (*i).auth, (*i).id, (*i).name);
+        _Serial.printf("BT_CHECK: %d\t%d\t%s\n", (*i).auth, (*i).id, (*i).name);
 #endif
         if ((*i).id == id)
         {
@@ -104,17 +104,17 @@ void bt_loop()
             if (bt_check(msg.sender.id))
             {
 #ifdef DEBUG
-                Serial.print("MSG");
+                _Serial.print("MSG");
 #endif
                 if (msg.messageType == CTBotMessageQuery)
                 {
 #ifdef DEBUG
-                    Serial.print(":CALLBACK");
+                    _Serial.print(":CALLBACK");
 #endif
                     int c = msg.callbackQueryData.toInt();
 #ifdef DEBUG
-                    Serial.print(":BUTTON:");
-                    Serial.println(c);
+                    _Serial.print(":BUTTON:");
+                    _Serial.println(c);
 #endif
                     ir_send(c);
                     tb.endQuery(msg.callbackQueryID, "Botão enviado!");
@@ -122,7 +122,7 @@ void bt_loop()
                 else
                 {
 #ifdef DEBUG
-                    Serial.println(":OTHER");
+                    _Serial.println(":OTHER");
 #endif
                     tb.sendMessage(msg.sender.id, "Escolha...", tkbd);
                 }

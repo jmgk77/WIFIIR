@@ -58,17 +58,25 @@ String wifiir_subname;
 
 void setup()
 {
+
+#ifdef SUPPORT_LITTLEFS
+  LittleFS.begin();
+#else
+  SPIFFS.begin();
+#endif
+
   WiFi.mode(WIFI_STA);
 
-  Serial.begin(115200);
-  Serial.println("");
-  Serial.println("WIFIIR - Starting");
+  _Serial.begin(115200);
+  _Serial.println("");
+  _Serial.println("WIFIIR - Starting");
+  _Serial.printf("Build Version: %s %s\n", __DATE__, __TIME__);
 
 #ifdef DEBUG
-  Serial.setDebugOutput(true);
+  _Serial.setDebugOutput(true);
   wm.setDebugOutput(true);
 #else
-  Serial.setDebugOutput(false);
+  _Serial.setDebugOutput(false);
   wm.setDebugOutput(false);
 #endif
 
@@ -79,7 +87,7 @@ void setup()
   if (!wm.autoConnect("WIFIIR"))
   {
 #ifdef DEBUG
-    Serial.println("Failed to connect");
+    _Serial.println("Failed to connect");
 #endif
     ESP.restart();
     delay(1000);
@@ -87,7 +95,7 @@ void setup()
   else
   {
 #ifdef DEBUG
-    Serial.println("Connected...");
+    _Serial.println("Connected...");
 #endif
   }
 
@@ -105,17 +113,6 @@ void setup()
   led_status = LOW;
   digitalWrite(LED_PIN, led_status);
 
-#ifdef SUPPORT_LITTLEFS
-  if (!LittleFS.begin())
-#else
-  if (!SPIFFS.begin())
-#endif
-  {
-#ifdef DEBUG
-    Serial.println("An Error has occurred while mounting LittleFS");
-#endif
-  }
-
 #ifdef DEBUG_ESP
   dump_fs();
 #endif
@@ -124,20 +121,20 @@ void setup()
   wifiir_name_load();
   String s = "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
 #ifdef DEBUG
-  Serial.printf("Discovery Protocols Name: %s\n", s.c_str());
+  _Serial.printf("Discovery Protocols Name: %s\n", s.c_str());
 #endif
 
 #ifdef SUPPORT_MDNS
   if (MDNS.begin(s.c_str()))
   {
 #ifdef DEBUG
-    Serial.println("MDNS OK");
+    _Serial.println("MDNS OK");
 #endif
   }
   else
   {
 #ifdef DEBUG
-    Serial.println("MDNS NOK");
+    _Serial.println("MDNS NOK");
 #endif
   }
   MDNS.addService("http", "tcp", 80);
@@ -147,13 +144,13 @@ void setup()
   if (NBNS.begin(s.c_str()))
   {
 #ifdef DEBUG
-    Serial.println("NETBIOS OK");
+    _Serial.println("NETBIOS OK");
 #endif
   }
   else
   {
 #ifdef DEBUG
-    Serial.println("NETBIOS NOK");
+    _Serial.println("NETBIOS NOK");
 #endif
   }
 #endif
@@ -162,13 +159,13 @@ void setup()
   if (LLMNR.begin(s.c_str()))
   {
 #ifdef DEBUG
-    Serial.println("LLMNR OK");
+    _Serial.println("LLMNR OK");
 #endif
   }
   else
   {
 #ifdef DEBUG
-    Serial.println("LLMNR NOK");
+    _Serial.println("LLMNR NOK");
 #endif
   }
 #endif
@@ -183,7 +180,7 @@ void setup()
   SSDP_esp8266.setManufacturer("JMGK");
   SSDP_esp8266.setManufacturerURL("http://www.jmgk.com.br/");
 #ifdef DEBUG
-  Serial.println("SSDP OK");
+  _Serial.println("SSDP OK");
 #endif
 #endif
 
@@ -253,7 +250,7 @@ void loop()
       //timeout
       irin_timeout = true;
 #ifdef DEBUG
-      Serial.println("IR TIMEOUT");
+      _Serial.println("IR TIMEOUT");
 #endif
       _end_ir();
     }

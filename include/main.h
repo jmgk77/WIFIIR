@@ -22,18 +22,23 @@
 //#define DEBUG_GENRNDUSR 8
 //#define DEBUG_ESP
 #define DEBUG_FS
+//#define DEBUG_SERIAL2FILE
 
 #define SUPPORT_LITTLEFS
 #define SUPPORT_OTA
 #define SUPPORT_TELEGRAM
 
 #define SUPPORT_MDNS
-//#define SUPPORT_NETBIOS
+#define SUPPORT_NETBIOS
 #define SUPPORT_LLMNR
 #define SUPPORT_SSDP
 
 #ifndef DEBUG_MALLOC
 #define _malloc malloc
+#endif
+
+#ifndef DEBUG_SERIAL2FILE
+#define _Serial Serial
 #endif
 
 #include <Arduino.h>

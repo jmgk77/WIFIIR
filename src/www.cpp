@@ -72,7 +72,7 @@ const char html_footer[] PROGMEM = "\
 void send_html(const char *h)
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.send_P(200, "text/html", html_header);
@@ -81,14 +81,14 @@ void send_html(const char *h)
   server.sendContent(h);
   server.sendContent_P(html_footer);
 #ifdef DEBUG_SEND
-  Serial.println(h);
+  _Serial.println(h);
 #endif
 }
 
 void handle_root()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   char *r = (char *)_malloc(15 + (10 * (552 + 32)) + 15 + 24 + 42 + 24 + 12);
 
@@ -136,7 +136,7 @@ void handle_root()
 void send_warning(const char *txt, int timeout = 500)
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   char *r = (char *)_malloc(512);
   sprintf_P(r, PSTR("<div class='x card warning'><p class='x'>%s</p></div><script>setTimeout(function (){document.location.href = '/';}, %d);</script>"),
@@ -148,7 +148,7 @@ void send_warning(const char *txt, int timeout = 500)
 void handle_add()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   char *r = (char *)_malloc(1024);
   sprintf_P(r, PSTR("%s%s\
@@ -172,7 +172,7 @@ void handle_add()
 void handle_add2()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   String button = server.hasArg("b") ? server.arg("b") : "";
   //clicou add sem ter nome/codigo (ou passou muito tempo)
@@ -201,7 +201,7 @@ void handle_add2()
 void handle_press()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   ir_send(atoi(server.arg("b").c_str()));
   send_warning("Botão enviado");
@@ -210,7 +210,7 @@ void handle_press()
 void handle_edit()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   int button = atoi(server.arg("b").c_str());
   auto i = ir_codes.cbegin() + button;
@@ -241,7 +241,7 @@ void handle_edit()
 void move_button(int button, int offset)
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   IrResult tmp;
   auto i = ir_codes.begin() + button;
@@ -265,7 +265,7 @@ void _main_with_index(int b)
 void handle_up()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   int button = atoi(server.arg("b").c_str());
   //primeiro botão nao pode ir pra cima
@@ -279,7 +279,7 @@ void handle_up()
 void handle_down()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   int button = atoi(server.arg("b").c_str());
   //ultimo botão não pode ir pra baixo
@@ -293,7 +293,7 @@ void handle_down()
 void handle_del()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   int button = atoi(server.arg("b").c_str());
   ir_codes.erase(ir_codes.begin() + button);
@@ -304,7 +304,7 @@ void handle_del()
 void handle_config()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   char *r = (char *)_malloc(2048);
   sprintf_P(r, PSTR("\
@@ -349,7 +349,7 @@ void handle_config()
 void handle_randombtn()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   IrResult tmp;
   memset(&tmp, 0, sizeof(IrResult));
@@ -370,7 +370,7 @@ void handle_randombtn()
 void handle_randomusr()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   BTUsers tmp;
   //gera botões aleatorios
@@ -380,7 +380,7 @@ void handle_randomusr()
     tmp.id = rand();
     itoa(tmp.id, tmp.name, 16);
 #ifdef DEBUG
-    Serial.printf("BT_RND: %d\t%d\t%s\n", tmp.auth, tmp.id, tmp.name);
+    _Serial.printf("BT_RND: %d\t%d\t%s\n", tmp.auth, tmp.id, tmp.name);
 #endif
     bt_users.push_back(tmp);
   }
@@ -391,7 +391,7 @@ void handle_randomusr()
 void handle_token()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   bt_token = server.hasArg("k") ? server.arg("k") : "";
   bt_setup();
@@ -403,7 +403,7 @@ void handle_token()
 void handle_name()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   wifiir_subname = server.hasArg("n") ? server.arg("n") : "";
   wifiir_name_save();
@@ -413,7 +413,7 @@ void handle_name()
 void handle_userman()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   if (!server.hasArg("w"))
   {
@@ -462,7 +462,7 @@ void handle_userman()
 void handle_clear()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   ir_codes.clear();
 #ifdef SUPPORT_LITTLEFS
@@ -476,17 +476,17 @@ void handle_clear()
 void reboot()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   delay(1000);
-  wm.reboot();
+  ESP.restart();
   delay(2000);
 }
 
 void handle_reset()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   send_warning("Reseting...", 5000);
   wm.resetSettings();
@@ -496,7 +496,7 @@ void handle_reset()
 void handle_reboot()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   send_warning("Rebooting...", 5000);
   reboot();
@@ -505,7 +505,7 @@ void handle_reboot()
 void handle_404()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
   send_html("<p>Not found!</p>");
 }
@@ -571,7 +571,7 @@ void handle_files()
 void install_www_handlers()
 {
 #ifdef DEBUG_F
-  Serial.println(__func__);
+  _Serial.println(__func__);
 #endif
 
   //abCdeFgHIJklMNOpQrstuVwxyz
