@@ -568,15 +568,25 @@ void handle_files()
 }
 #endif
 
+void handle_rclient()
+{
+#ifdef DEBUG_F
+  _Serial.println(__func__);
+#endif
+#ifdef DEBUG
+  _Serial.println("!Remote client connected");
+#endif
+    server.send(200, "text/html", "OK");
+}
+
 void install_www_handlers()
 {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
 
-  //abCdeFgHIJklMNOpQrstuVwxyz
+  //abcdefgHIJklMNOpQrstuVwxyz
   //description.xml
-  //files
   server.on("/", handle_root);
   server.on("/a", handle_add);
   server.on("/p", handle_press);
@@ -605,7 +615,8 @@ void install_www_handlers()
             { SSDP_esp8266.schema(server.client()); });
 #endif
 #ifdef DEBUG_FS
-  server.on("/files", handle_files);
+  server.on("/f", handle_files);
 #endif
+  server.on("/c", handle_rclient);
   server.onNotFound(handle_404);
 }
