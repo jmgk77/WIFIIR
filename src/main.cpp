@@ -99,6 +99,9 @@ void setup()
 #endif
   }
 
+  //get internet time
+  configTime(-3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+
 #ifdef SUPPORT_OTA
   httpUpdater.setup(&server, "/update");
 #endif

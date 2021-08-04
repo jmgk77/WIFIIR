@@ -560,6 +560,8 @@ void handle_files()
       s = "<a download='" + dir.fileName() + "' href='files?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
       itoa(dir.fileSize(), buf, 10);
       s += "    (" + String(buf) + ")    ";
+      const time_t t = dir.fileTime();
+      s += String(ctime(&t));
       s += "<a href='files?x=" + dir.fileName() + "'>x</a><br>";
       server.sendContent(s.c_str());
     }
@@ -576,7 +578,7 @@ void handle_rclient()
 #ifdef DEBUG
   _Serial.println("!Remote client connected");
 #endif
-    server.send(200, "text/html", "OK");
+  server.send(200, "text/html", "OK");
 }
 
 void install_www_handlers()
