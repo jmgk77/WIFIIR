@@ -21,19 +21,19 @@ void codes_load()
 #endif
   if (f)
   {
-    IrResult tmp;
+    CODES tmp;
     int size = f.size();
     //pre-aloca codigos
-    ir_codes.reserve((size / sizeof(IrResult)));
+    ir_codes.reserve((size / sizeof(CODES)));
 #ifdef DEBUG
-    _Serial.printf("(%d)\n", (size / sizeof(IrResult)));
+    _Serial.printf("(%d)\n", (size / sizeof(CODES)));
 #endif
-    for (int i = 0; i < size; i += sizeof(IrResult))
+    for (int i = 0; i < size; i += sizeof(CODES))
     {
-      f.read((uint8_t *)&tmp, sizeof(IrResult));
+      f.read((uint8_t *)&tmp, sizeof(CODES));
 #ifdef DEBUG_CODES
       _Serial.printf(resultToHumanReadableBasic(&tmp.results).c_str());
-      _hexdump((void *)&tmp, sizeof(IrResult));
+      _hexdump((void *)&tmp, sizeof(CODES));
 #endif
       ir_codes.push_back(tmp);
     }
@@ -63,9 +63,9 @@ void codes_save()
     {
 #ifdef DEBUG_CODES
       _Serial.printf(resultToHumanReadableBasic(&(*i).results).c_str());
-      _hexdump((void *)(*i).name, sizeof(IrResult));
+      _hexdump((void *)(*i).name, sizeof(CODES));
 #endif
-      f.write((const uint8_t *)(*i).name, sizeof(IrResult));
+      f.write(&(*i)._start, sizeof(CODES));
     }
     f.close();
   }
@@ -136,7 +136,7 @@ void telegram_save()
 void telegram_users_load()
 {
 #ifdef DEBUG
-  _Serial.println("USERS::LOAD");
+  _Serial.println("TUSERS::LOAD");
 #endif
 #ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/users.bin", "r");
@@ -145,16 +145,16 @@ void telegram_users_load()
 #endif
   if (f)
   {
-    BTUsers tmp;
+    TUSERS tmp;
     int size = f.size();
     //pre-aloca usuarios
-    ir_codes.reserve((size / sizeof(BTUsers)));
+    ir_codes.reserve((size / sizeof(TUSERS)));
 #ifdef DEBUG
-    _Serial.printf("(%d)\n", (size / sizeof(BTUsers)));
+    _Serial.printf("(%d)\n", (size / sizeof(TUSERS)));
 #endif
-    for (int i = 0; i < size; i += sizeof(BTUsers))
+    for (int i = 0; i < size; i += sizeof(TUSERS))
     {
-      f.read((uint8_t *)&tmp, sizeof(BTUsers));
+      f.read((uint8_t *)&tmp, sizeof(TUSERS));
 #ifdef DEBUG
       _Serial.printf("BT_LOAD: %d\t%d\t%s\n", tmp.auth, tmp.id, tmp.name);
 #endif
@@ -173,7 +173,7 @@ void telegram_users_save()
 {
 
 #ifdef DEBUG
-  _Serial.println("USERS::SAVE");
+  _Serial.println("TUSERS::SAVE");
 #endif
 #ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/users.bin", "w");
@@ -191,7 +191,7 @@ void telegram_users_save()
       if ((*i).auth)
       {
         //so salva usuarios autorizados
-        f.write((const uint8_t *)&(*i).auth, sizeof(BTUsers));
+        f.write(&(*i)._start, sizeof(TUSERS));
       }
     }
     f.close();

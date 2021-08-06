@@ -75,19 +75,33 @@
 #include <CTBot.h>
 #endif
 
+typedef enum
+{
+    UNUSED_CODE,
+    IR_CODE,
+    //RF_CODE
+} CODES_TYPE;
+
 typedef struct
 {
+    uint8_t _start;
+    CODES_TYPE type;
     char name[32];
-    decode_results results;
-} IrResult;
+    union
+    {
+        decode_results results;
+        //rf_results rfcode;
+    };
+} CODES;
 
 #ifdef SUPPORT_TELEGRAM
 typedef struct
 {
+    uint8_t _start;
     bool auth;
     int id;
     char name[32];
-} BTUsers;
+} TUSERS;
 #endif
 
 #include "_debug.h"

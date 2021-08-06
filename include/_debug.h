@@ -12,7 +12,7 @@
 #include "main.h"
 
 #ifdef DEBUG
-void dump_ir(IrResult irresult);
+void dump_ir(CODES irresult);
 void _hexdump(void *ptr, int buflen);
 void dump_fs();
 void dump_esp8266();

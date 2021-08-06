@@ -11,7 +11,7 @@
 
 #include "main.h"
 
-extern std::vector<IrResult> ir_codes;
+extern std::vector<CODES> ir_codes;
 
 void codes_load();
 void codes_save();
@@ -19,7 +19,7 @@ void codes_save();
 #ifdef SUPPORT_TELEGRAM
 extern String bt_token;
 extern CTBot tb;
-extern std::vector<BTUsers> bt_users;
+extern std::vector<TUSERS> bt_users;
 
 void telegram_load();
 void telegram_save();

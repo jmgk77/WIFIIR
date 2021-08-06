@@ -191,6 +191,7 @@ void handle_add2()
   else
   {
     //save button info
+    irresult.type = IR_CODE;
     strncpy(irresult.name, button.c_str(), sizeof(irresult.name) - 1);
     ir_codes.push_back(irresult);
     codes_save();
@@ -243,9 +244,9 @@ void move_button(int button, int offset)
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  IrResult tmp;
+  CODES tmp;
   auto i = ir_codes.begin() + button;
-  memcpy(&tmp, &(*i), sizeof(IrResult));
+  memcpy(&tmp, &(*i), sizeof(CODES));
   ir_codes.erase(i);
   ir_codes.insert(ir_codes.begin() + button + offset, tmp);
   codes_save();
@@ -351,8 +352,8 @@ void handle_randombtn()
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  IrResult tmp;
-  memset(&tmp, 0, sizeof(IrResult));
+  CODES tmp;
+  memset(&tmp, 0, sizeof(CODES));
   //gera botões aleatorios
   for (int i = 1; i <= DEBUG_GENRNDBTN; i++)
   {
@@ -372,7 +373,7 @@ void handle_randomusr()
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  BTUsers tmp;
+  TUSERS tmp;
   //gera botões aleatorios
   for (int i = 1; i <= DEBUG_GENRNDUSR; i++)
   {
@@ -440,11 +441,11 @@ void handle_userman()
   else
   {
     //manage results
-    std::vector<BTUsers> tmp_users;
+    std::vector<TUSERS> tmp_users;
     int c = 0;
     for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i, c++)
     {
-      BTUsers tmp;
+      TUSERS tmp;
       tmp.auth = server.hasArg(String(c)) ? true : false;
       tmp.id = (*i).id;
       strcpy(tmp.name, (*i).name);
@@ -542,7 +543,7 @@ void handle_files()
 #else
     SPIFFS.remove(fname.c_str());
 #endif
-    server.send(200, "text/html", "<script>document.location.href = '/files'</script>");
+    server.send(200, "text/html", "<script>document.location.href = '/f'</script>");
   }
   else
   //dir list
@@ -557,12 +558,12 @@ void handle_files()
 #endif
     while (dir.next())
     {
-      s = "<a download='" + dir.fileName() + "' href='files?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
+      s = "<a download='" + dir.fileName() + "' href='f?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
       itoa(dir.fileSize(), buf, 10);
       s += "    (" + String(buf) + ")    ";
       const time_t t = dir.fileTime();
       s += String(ctime(&t));
-      s += "<a href='files?x=" + dir.fileName() + "'>x</a><br>";
+      s += "<a href='f?x=" + dir.fileName() + "'>x</a><br>";
       server.sendContent(s.c_str());
     }
     server.sendContent("<br><br><a href='/'>BACK</a><br>");

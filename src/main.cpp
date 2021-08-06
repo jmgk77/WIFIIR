@@ -25,9 +25,9 @@ bool irin_enable = false;
 bool irin_timeout;
 
 //
-IrResult irresult;
+CODES irresult;
 
-std::vector<IrResult> ir_codes;
+std::vector<CODES> ir_codes;
 
 WiFiManager wm;
 ESP8266WebServer server;

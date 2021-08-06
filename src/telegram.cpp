@@ -15,7 +15,7 @@ String bt_token;
 CTBotInlineKeyboard tkbd;
 CTBot tb;
 
-std::vector<BTUsers> bt_users;
+std::vector<TUSERS> bt_users;
 
 void bt_setup()
 {
@@ -68,7 +68,7 @@ void tb_kbd()
 
 void bt_adduser(int id, const char *username)
 {
-    BTUsers tmp;
+    TUSERS tmp;
     tmp.auth = false;
     tmp.id = id;
     strncpy(tmp.name, username, sizeof(tmp.name));

@@ -10,7 +10,7 @@
 #include "_debug.h"
 
 #ifdef DEBUG
-void dump_ir(IrResult irresult)
+void dump_ir(CODES irresult)
 {
     String s;
     switch (irresult.results.decode_type)

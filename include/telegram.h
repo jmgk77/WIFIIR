@@ -13,7 +13,7 @@
 
 #define ITENS_PER_ROW 4
 
-extern std::vector<IrResult> ir_codes;
+extern std::vector<CODES> ir_codes;
 
 void bt_setup();
 void bt_loop();
