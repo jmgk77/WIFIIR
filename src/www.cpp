@@ -152,6 +152,8 @@ void handle_add()
 #endif
   char *r = (char *)_malloc(1024);
   sprintf_P(r, PSTR("%s%s\
+<script>window.onbeforeunload=function(){a=new XMLHttpRequest();a.open('GET', \"/v\", true);a.send();};\
+setInterval(function(){document.location.href=\"/\";},30000);</script>\
 <form action='/s' method='POST'>\
 <p>1. Entre o nome do botão que você quer adicionar</p>\
 <input type='text' name='b' maxlength='31' value='%s'>\
@@ -180,11 +182,10 @@ void handle_add2()
   {
     //redirect to /add with "button" as param
     char *r = (char *)_malloc(512);
-    sprintf(r, "<script>document.location.href = '/a%s%s%s%s'</script>",
+    sprintf(r, "<script>document.location.href = '/a%s%s%s'</script>",
             button.isEmpty() ? "?e=1" : "?b=",
             button.isEmpty() ? "" : button.c_str(),
-            decoding_onoff ? "&n=1" : "",
-            irin_timeout ? "&n=1" : "");
+            (decoding_onoff || irin_timeout) ? "&n=1" : "");
     send_html(r);
     free(r);
   }
@@ -342,6 +343,9 @@ void handle_config()
 <input type='submit' value='Atualizar'></div></form>"));
 #endif
   sprintf(r + strlen(r), "<br>Build Version: %s %s<br><br>", __DATE__, __TIME__);
+#ifdef DEBUG
+  sprintf(r + strlen(r), "<a href='/c'>HW Info</a><br><a href='/f'>File browser</a><br>");
+#endif
   send_html(r);
   free(r);
 }
@@ -576,24 +580,33 @@ void handle_info()
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-    FSInfo fs_info;
+  FSInfo fs_info;
 #ifdef SUPPORT_LITTLEFS
-    LittleFS.info(fs_info);
+  LittleFS.info(fs_info);
 #else
-    SPIFFS.info(fs_info);
+  SPIFFS.info(fs_info);
 #endif
   char *buf = (char *)_malloc(1024);
   sprintf_P(buf, PSTR("OK\n\nReset: %s\n\
 ESP8266_INFO\nESP.getBootMode(): %d\nESP.getSdkVersion(): %s\nESP.getBootVersion(): %d\nESP.getChipId(): %08x\n\
 ESP.getFlashChipSize(): %d\nESP.getFlashChipRealSize(): %d\nESP.getFlashChipSizeByChipId(): %d\nESP.getFlashChipId(): %08x\n\
 ESP.getFreeHeap(): %d\nFS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\nmaxOpenFiles: %d\nmaxPathLength: %d\n"),
-          ESP.getResetReason().c_str(),
-          ESP.getBootMode(), ESP.getSdkVersion(), ESP.getBootVersion(), ESP.getChipId(), ESP.getFlashChipSize(),
-          ESP.getFlashChipRealSize(), ESP.getFlashChipSizeByChipId(), ESP.getFlashChipId(), ESP.getFreeHeap(),
-          fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
+            ESP.getResetReason().c_str(),
+            ESP.getBootMode(), ESP.getSdkVersion(), ESP.getBootVersion(), ESP.getChipId(), ESP.getFlashChipSize(),
+            ESP.getFlashChipRealSize(), ESP.getFlashChipSizeByChipId(), ESP.getFlashChipId(), ESP.getFreeHeap(),
+            fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
 
   server.send(200, "text/txt", buf);
   free(buf);
+}
+
+void handle_timeout()
+{
+#ifdef DEBUG_F
+  _Serial.println(__func__);
+#endif
+  _end_ir();
+  server.send(200, "text/txt", "OK");
 }
 
 void install_www_handlers()
@@ -602,7 +615,7 @@ void install_www_handlers()
   _Serial.println(__func__);
 #endif
 
-  //abcdefgHIJklMNOpQrstuVwxyz
+  //abcdefgHIJklMNOpQrstuvwxyz
   //description.xml
   server.on("/", handle_root);
   server.on("/a", handle_add);
@@ -635,5 +648,6 @@ void install_www_handlers()
   server.on("/f", handle_files);
 #endif
   server.on("/c", handle_info);
+  server.on("/v", handle_timeout);
   server.onNotFound(handle_404);
 }

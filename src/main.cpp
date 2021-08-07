@@ -21,7 +21,7 @@ const uint16_t kRecvPin = IR_RECV_PIN;
 const uint16_t kCaptureBufferSize = 1024;
 const uint8_t kTimeout = 50;
 IRrecv irrecv(kRecvPin, kCaptureBufferSize, kTimeout, false);
-bool irin_enable = false;
+bool irin_enable;
 bool irin_timeout;
 
 //
@@ -38,11 +38,8 @@ ESP8266HTTPUpdateServer httpUpdater;
 bool decoding_onoff;
 
 //led blink vars
-#define IR_TIMEOUT 1000 * 60 * 3
-#define LED_BLINK_INTERVAL 500
-unsigned long old_millis = 0;
-unsigned long ir_started;
-int led_status = LOW;
+#define LED_BLINK_INTERVAL 300
+ESP8266Timer ITimer;
 
 //device name
 String wifiir_subname;
@@ -55,6 +52,19 @@ String wifiir_subname;
 ███████║███████╗   ██║   ╚██████╔╝██║
 ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝
 */
+
+void IRAM_ATTR blink_led()
+{
+  static bool toggle = false;
+  if (decoding_onoff)
+  {
+    digitalWrite(LED_PIN, toggle);
+    toggle = !toggle;
+
+    //timer1_write(600000);
+    timer1_write(60000);
+  }
+}
 
 void setup()
 {
@@ -109,12 +119,6 @@ void setup()
   install_www_handlers();
 
   server.begin();
-
-  //blinking LED setup
-  decoding_onoff = false;
-  pinMode(LED_PIN, OUTPUT);
-  led_status = LOW;
-  digitalWrite(LED_PIN, led_status);
 
 #ifdef DEBUG_ESP
   dump_fs();
@@ -199,6 +203,12 @@ void setup()
 #endif
 
   irsend.begin();
+
+  //blinking LED setup
+  irin_timeout = irin_enable = decoding_onoff = false;
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+  ITimer.attachInterruptInterval(LED_BLINK_INTERVAL, blink_led);
 }
 
 /*
@@ -213,10 +223,8 @@ void setup()
 void _end_ir()
 {
   irrecv.disableIRIn();
-  led_status = LOW;
-  digitalWrite(LED_PIN, led_status);
-  irin_enable = false;
-  decoding_onoff = false;
+  irin_enable = decoding_onoff = false;
+  digitalWrite(LED_PIN, LOW);
 }
 
 void loop()
@@ -232,33 +240,15 @@ void loop()
   //lendo codigo?
   if (decoding_onoff)
   {
-    //pisca led
-    if ((millis() - old_millis) > LED_BLINK_INTERVAL)
-    {
-      old_millis = millis();
-      led_status = (led_status == HIGH) ? LOW : HIGH;
-      digitalWrite(LED_PIN, led_status);
-    }
-    //enable
+    //habilita leitor
     if (!irin_enable)
     {
-      irrecv.enableIRIn(); // Start up the IR receiver.
+      irrecv.enableIRIn();
       irin_enable = true;
       irin_timeout = false;
-      ir_started = millis();
-    }
-    //check timeout
-    if ((millis() - ir_started) > IR_TIMEOUT)
-    {
-      //timeout
-      irin_timeout = true;
-#ifdef DEBUG
-      _Serial.println("IR TIMEOUT");
-#endif
-      _end_ir();
     }
 
-    //decode
+    //esperando resultado...
     if (irrecv.decode(&irresult.results))
     {
 #ifdef DEBUG

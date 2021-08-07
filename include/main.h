@@ -9,6 +9,10 @@
 
 #pragma once
 
+#if !defined(ESP8266)
+#error This code is designed to run on ESP8266 and ESP8266-based boards! Please check your Tools->Board setting.
+#endif
+
 #define LED_PIN D5
 #define IR_LED_PIN D2
 #define IR_RECV_PIN D7
@@ -74,6 +78,10 @@
 #ifdef SUPPORT_TELEGRAM
 #include <CTBot.h>
 #endif
+
+#define TIMER_INTERRUPT_DEBUG 0
+#define _TIMERINTERRUPT_LOGLEVEL_ 0
+#include <ESP8266TimerInterrupt.h>
 
 typedef enum
 {
