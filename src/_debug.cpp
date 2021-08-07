@@ -383,30 +383,16 @@ void dump_fs()
     SPIFFS.info(fs_info);
 #endif
     _Serial.printf("FS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\nmaxOpenFiles: %d\nmaxPathLength: %d\n",
-                  fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
+                   fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
 }
 
 void dump_esp8266()
 {
-    _Serial.println("ESP8266_INFO");
-    _Serial.print("ESP.getBootMode(): ");
-    _Serial.println(ESP.getBootMode());
-    _Serial.print("ESP.getSdkVersion(): ");
-    _Serial.println(ESP.getSdkVersion());
-    _Serial.print("ESP.getBootVersion(): ");
-    _Serial.println(ESP.getBootVersion());
-    _Serial.print("ESP.getChipId(): ");
-    _Serial.println(ESP.getChipId());
-    _Serial.print("ESP.getFlashChipSize(): ");
-    _Serial.println(ESP.getFlashChipSize());
-    _Serial.print("ESP.getFlashChipRealSize(): ");
-    _Serial.println(ESP.getFlashChipRealSize());
-    _Serial.print("ESP.getFlashChipSizeByChipId(): ");
-    _Serial.println(ESP.getFlashChipSizeByChipId());
-    _Serial.print("ESP.getFlashChipId(): ");
-    _Serial.println(ESP.getFlashChipId());
-    _Serial.print("ESP.getFreeHeap(): ");
-    _Serial.println(ESP.getFreeHeap());
+    _Serial.printf("ESP8266_INFO\nESP.getBootMode(): %d\nESP.getSdkVersion(): %s\nESP.getBootVersion(): %d\nESP.getChipId(): %08x\n\
+    ESP.getFlashChipSize(): %d\nESP.getFlashChipRealSize(): %d\nESP.getFlashChipSizeByChipId(): %d\nESP.getFlashChipId(): %08x\n\
+    ESP.getFreeHeap(): %d\n",
+                   ESP.getBootMode(), ESP.getSdkVersion(), ESP.getBootVersion(), ESP.getChipId(), ESP.getFlashChipSize(),
+                   ESP.getFlashChipRealSize(), ESP.getFlashChipSizeByChipId(), ESP.getFlashChipId(), ESP.getFreeHeap());
 }
 
 #ifdef DEBUG_MALLOC

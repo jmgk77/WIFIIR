@@ -29,7 +29,7 @@
 #define SUPPORT_TELEGRAM
 
 #define SUPPORT_MDNS
-#define SUPPORT_NETBIOS
+//#define SUPPORT_NETBIOS
 #define SUPPORT_LLMNR
 #define SUPPORT_SSDP
 

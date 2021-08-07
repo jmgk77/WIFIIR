@@ -11,9 +11,9 @@
 
 const char html_header[] PROGMEM = "\
 <!DOCTYPE html><html lang='pt-br'>\
-<head><title>WIFIIR</title>\
-<meta charset='UTF-8'/>\
+<head><meta charset='UTF-8'/>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
+<meta http-equiv='cache-control' content='no-cache, no-store, must-revalidate'>\
 <link rel='shortcut icon' href='data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAABmJLR0QA/wD/AP+gvaeTAAABoklEQVRIie3UvWsUURQF8F+2VEyKsJgIiokRApZa+VGIKVRSmVJtAgr6B1gEO/VvsLDWNkbUCKKFhbZpwoYIClZ20WiXj7WYu8zsM7M7E6JVDlyYefecc997986wj11ioE9+FNO4gFM4hqHI/cQ3LOMDXuJ73Q1cwiI20a4Ym3iFi1UKnMCbGuZlsRheO+Iq1hLBFj5iTnZ9EzgYcTLW5vApuEXtOq6nRe4lxC087bWrHTCBZ4nPNu53COOx0El+wemCwRHclV1HC78jWniNO8Hp4Ex4FIsdh0HZtLTxFsMhGMFjbOjfk43gHg7tcHi1w/tQZxdNnEcj3q/gR4UCaazhcng0wrOpBLP+Huv3uIVJ+TBM4nbk0jGfLTMv4rPufk1V0Ezha0G3WqXQwyC/kx97FI+whF8RS8EdCU5TfroHVQrBgcLzzTAu68s6bpRoK2NG9+iXxTau9TJq9ErinPzH2wqzoYgZrERuAGdrHqILR/ECT2TfW4rByC0Ed88wHqbPMbaXxikW5H2ZryPs16MU7Zr8XWNMdpJ5//jq9vH/8QdSN6mUF/XpPQAAAABJRU5ErkJggg=='/>\
 <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css'>\
 <style>\
@@ -53,7 +53,7 @@ overflow:hidden}\
 .x{\
 margin:0 auto;\
 text-align:center}\
-</style></head>\
+</style><title>WIFIIR</title></head>\
 <body><header class='sticky'>\
 <div class='x card warning'>\
 <p class='x'>WIFIIR - Controle remoto IR via WIFI</p>\
@@ -307,7 +307,7 @@ void handle_config()
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(2048);//218+32+512+170+400+64+169+172+265+28+20
+  char *r = (char *)_malloc(2048); //218+32+512+170+400+64+169+172+265+28+20
   sprintf_P(r, PSTR("\
 <form class='f' action='/w' method='POST'><div class='b'>Device name</div>\
 <div class='c'><input type='text' name='n' maxlength='31' value='%s'/></div>\
@@ -571,15 +571,29 @@ void handle_files()
 }
 #endif
 
-void handle_rclient()
+void handle_info()
 {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-#ifdef DEBUG
-  _Serial.println("!Remote client connected");
+    FSInfo fs_info;
+#ifdef SUPPORT_LITTLEFS
+    LittleFS.info(fs_info);
+#else
+    SPIFFS.info(fs_info);
 #endif
-  server.send(200, "text/html", "OK");
+  char *buf = (char *)_malloc(1024);
+  sprintf_P(buf, PSTR("OK\n\nReset: %s\n\
+ESP8266_INFO\nESP.getBootMode(): %d\nESP.getSdkVersion(): %s\nESP.getBootVersion(): %d\nESP.getChipId(): %08x\n\
+ESP.getFlashChipSize(): %d\nESP.getFlashChipRealSize(): %d\nESP.getFlashChipSizeByChipId(): %d\nESP.getFlashChipId(): %08x\n\
+ESP.getFreeHeap(): %d\nFS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\nmaxOpenFiles: %d\nmaxPathLength: %d\n"),
+          ESP.getResetReason().c_str(),
+          ESP.getBootMode(), ESP.getSdkVersion(), ESP.getBootVersion(), ESP.getChipId(), ESP.getFlashChipSize(),
+          ESP.getFlashChipRealSize(), ESP.getFlashChipSizeByChipId(), ESP.getFlashChipId(), ESP.getFreeHeap(),
+          fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
+
+  server.send(200, "text/txt", buf);
+  free(buf);
 }
 
 void install_www_handlers()
@@ -620,6 +634,6 @@ void install_www_handlers()
 #ifdef DEBUG_FS
   server.on("/f", handle_files);
 #endif
-  server.on("/c", handle_rclient);
+  server.on("/c", handle_info);
   server.onNotFound(handle_404);
 }
