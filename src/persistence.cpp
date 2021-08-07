@@ -26,6 +26,12 @@ void codes_load()
     //pre-aloca codigos
     ir_codes.reserve((size / sizeof(CODES)));
 #ifdef DEBUG
+    if (size % sizeof(CODES))
+    {
+      _Serial.println("ERROR: codes.bin dont seens right...");
+    }
+#endif
+#ifdef DEBUG
     _Serial.printf("(%d)\n", (size / sizeof(CODES)));
 #endif
     for (int i = 0; i < size; i += sizeof(CODES))
@@ -96,7 +102,8 @@ void telegram_load()
   if (f)
   {
     char b[64];
-    f.read((uint8_t *)&b, f.size());
+    memset(&b, 0, sizeof(b));
+    f.read((uint8_t *)b, f.size());
     bt_token = String(b);
     f.close();
   }
@@ -149,6 +156,12 @@ void telegram_users_load()
     int size = f.size();
     //pre-aloca usuarios
     ir_codes.reserve((size / sizeof(TUSERS)));
+#ifdef DEBUG
+    if (size % sizeof(TUSERS))
+    {
+      _Serial.println("ERROR: users.bin dont seens right...");
+    }
+#endif
 #ifdef DEBUG
     _Serial.printf("(%d)\n", (size / sizeof(TUSERS)));
 #endif
@@ -246,9 +259,9 @@ void wifiir_name_save()
 #endif
   if (f)
   {
-    char tmp[8];
+    char tmp[32];
     strncpy((char *)&tmp, wifiir_subname.c_str(), sizeof(tmp));
-    f.write((char *)&tmp, strlen(tmp));
+    f.write(tmp, strlen(tmp));
     f.close();
 #ifdef DEBUG
     _Serial.printf("Subname: %s (%d)\n", (char *)&tmp, strlen(tmp));

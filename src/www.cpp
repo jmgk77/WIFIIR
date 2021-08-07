@@ -307,7 +307,7 @@ void handle_config()
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(2048);
+  char *r = (char *)_malloc(2048);//218+32+512+170+400+64+169+172+265+28+20
   sprintf_P(r, PSTR("\
 <form class='f' action='/w' method='POST'><div class='b'>Device name</div>\
 <div class='c'><input type='text' name='n' maxlength='31' value='%s'/></div>\
@@ -325,7 +325,7 @@ void handle_config()
   sprintf_P(r + strlen(r), PSTR("\
 <form class='f' action='/k' method='POST'><div class='b'>Telegram Token</div>\
 <div class='c'><input type='checkbox' onchange='document.getElementById(\"k\").disabled=!this.checked;document.getElementById(\"bk\").disabled=!this.checked;'>\
-<input type='text' id='k' name='k' disabled value='%s'/></div>\
+<input type='text' id='k' name='k' disabled value='%s' maxlength='63'/></div>\
 <div class='b'><input type='submit' id='bk' disabled value='Salvar'></div></form>"),
             bt_token.c_str());
   strcat_P(r, PSTR("\
