@@ -587,11 +587,12 @@ void handle_info()
   SPIFFS.info(fs_info);
 #endif
   char *buf = (char *)_malloc(1024);
-  sprintf_P(buf, PSTR("OK\n\nReset: %s\n\
-ESP8266_INFO\nESP.getBootMode(): %d\nESP.getSdkVersion(): %s\nESP.getBootVersion(): %d\nESP.getChipId(): %08x\n\
-ESP.getFlashChipSize(): %d\nESP.getFlashChipRealSize(): %d\nESP.getFlashChipSizeByChipId(): %d\nESP.getFlashChipId(): %08x\n\
-ESP.getFreeHeap(): %d\nFS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\nmaxOpenFiles: %d\nmaxPathLength: %d\n"),
-            ESP.getResetReason().c_str(),
+  sprintf_P(buf, PSTR("OK\n\nReset: %s\nBoot time: %s\n\
+ESP8266_INFO\ngetBootMode: %d\ngetSdkVersion: %s\ngetBootVersion: %d\ngetChipId: %08x\n\
+getFlashChipSize: %d\ngetFlashChipRealSize: %d\ngetFlashChipSizeByChipId: %d\ngetFlashChipId: %08x\n\
+getFreeHeap: %d\n\nFS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\n\
+maxOpenFiles: %d\nmaxPathLength: %d\n\n"),
+            ESP.getResetReason().c_str(), boot_time.c_str(),
             ESP.getBootMode(), ESP.getSdkVersion(), ESP.getBootVersion(), ESP.getChipId(), ESP.getFlashChipSize(),
             ESP.getFlashChipRealSize(), ESP.getFlashChipSizeByChipId(), ESP.getFlashChipId(), ESP.getFreeHeap(),
             fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);

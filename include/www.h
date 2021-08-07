@@ -23,6 +23,8 @@ extern void _end_ir();
 
 extern std::vector<CODES> ir_codes;
 
+extern String boot_time;
+
 #ifdef SUPPORT_TELEGRAM
 extern String bt_token;
 extern std::vector<TUSERS> bt_users;

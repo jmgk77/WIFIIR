@@ -44,6 +44,9 @@ ESP8266Timer ITimer;
 //device name
 String wifiir_subname;
 
+//
+String boot_time;
+
 /*
 ███████╗███████╗████████╗██╗   ██╗██████╗
 ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗
@@ -110,7 +113,8 @@ void setup()
   }
 
   //get internet time
-  configTime(-3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  configTime("<-03>3", "pool.ntp.org");
+  yield();
 
 #ifdef SUPPORT_OTA
   httpUpdater.setup(&server, "/update");
@@ -229,6 +233,25 @@ void _end_ir()
 
 void loop()
 {
+  //espera leitura do tempo...
+  if (boot_time.isEmpty())
+  {
+    time_t tnow = time(nullptr);
+    if (tnow > 100000)
+    {
+      boot_time = String(ctime(&tnow));
+#ifdef DEBUG
+      _Serial.print(boot_time.c_str());
+#endif
+    }
+    else
+    {
+#ifdef DEBUG
+      _Serial.print(".");
+#endif
+    }
+  }
+
   server.handleClient();
 #ifdef SUPPORT_MDNS
   MDNS.update();
