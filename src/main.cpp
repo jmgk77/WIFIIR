@@ -64,7 +64,6 @@ void IRAM_ATTR blink_led()
     digitalWrite(LED_PIN, toggle);
     toggle = !toggle;
 
-    //timer1_write(600000);
     timer1_write(60000);
   }
 }

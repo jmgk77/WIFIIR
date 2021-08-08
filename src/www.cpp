@@ -153,7 +153,7 @@ void handle_add()
   char *r = (char *)_malloc(1024);
   sprintf_P(r, PSTR("%s%s\
 <script>window.onbeforeunload=function(){a=new XMLHttpRequest();a.open('GET', \"/v\", true);a.send();};\
-setInterval(function(){document.location.href=\"/\";},30000);</script>\
+setInterval(function(){document.location.href=\"/\";},120000);</script>\
 <form action='/s' method='POST'>\
 <p>1. Entre o nome do botão que você quer adicionar</p>\
 <input type='text' name='b' maxlength='31' value='%s'>\
@@ -587,16 +587,15 @@ void handle_info()
   SPIFFS.info(fs_info);
 #endif
   char *buf = (char *)_malloc(1024);
-  sprintf_P(buf, PSTR("OK\n\nReset: %s\nBoot time: %s\n\
+  sprintf_P(buf, PSTR("OK\n\nReset: %s\nLocal IP: %s\nBoot time: %s\n\
 ESP8266_INFO\ngetBootMode: %d\ngetSdkVersion: %s\ngetBootVersion: %d\ngetChipId: %08x\n\
 getFlashChipSize: %d\ngetFlashChipRealSize: %d\ngetFlashChipSizeByChipId: %d\ngetFlashChipId: %08x\n\
 getFreeHeap: %d\n\nFS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\n\
 maxOpenFiles: %d\nmaxPathLength: %d\n\n"),
-            ESP.getResetReason().c_str(), boot_time.c_str(),
+            ESP.getResetReason().c_str(), WiFi.localIP().toString().c_str(), boot_time.c_str(),
             ESP.getBootMode(), ESP.getSdkVersion(), ESP.getBootVersion(), ESP.getChipId(), ESP.getFlashChipSize(),
             ESP.getFlashChipRealSize(), ESP.getFlashChipSizeByChipId(), ESP.getFlashChipId(), ESP.getFreeHeap(),
             fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
-
   server.send(200, "text/txt", buf);
   free(buf);
 }
