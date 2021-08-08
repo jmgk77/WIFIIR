@@ -36,6 +36,7 @@ ESP8266HTTPUpdateServer httpUpdater;
 #endif
 
 bool decoding_onoff;
+bool toggle;
 
 //led blink vars
 #define LED_BLINK_INTERVAL 300
@@ -58,7 +59,6 @@ String boot_time;
 
 void IRAM_ATTR blink_led()
 {
-  static bool toggle = false;
   if (decoding_onoff)
   {
     digitalWrite(LED_PIN, toggle);
