@@ -63,8 +63,6 @@ void IRAM_ATTR blink_led()
   {
     digitalWrite(LED_PIN, toggle);
     toggle = !toggle;
-
-    timer1_write(60000);
   }
 }
 
@@ -211,7 +209,7 @@ void setup()
   irin_timeout = irin_enable = decoding_onoff = false;
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
-  ITimer.attachInterruptInterval(LED_BLINK_INTERVAL, blink_led);
+  ITimer.attachInterruptInterval(LED_BLINK_INTERVAL * 1000, blink_led);
 }
 
 /*
