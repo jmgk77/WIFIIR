@@ -80,7 +80,7 @@ void setup()
   _Serial.begin(115200);
   _Serial.println("");
   _Serial.println("WIFIIR - Starting");
-  _Serial.printf("Build Version: %s %s\n", __DATE__, __TIME__);
+  _Serial.printf("Build Version: %s %s\n", WIFIIR_VERSION);
 
 #ifdef DEBUG
   _Serial.setDebugOutput(true);
@@ -111,7 +111,22 @@ void setup()
 
   //get internet time
   configTime("<-03>3", "pool.ntp.org");
-  yield();
+  //verifica 2021...
+  while (time(nullptr) < 1609459200)
+  {
+#ifdef DEBUG
+    Serial.print(".");
+#endif
+    delay(100);
+  }
+#ifdef DEBUG
+  Serial.println();
+#endif
+  time_t tnow = time(nullptr);
+  boot_time = String(ctime(&tnow));
+#ifdef DEBUG
+  Serial.println(boot_time.c_str());
+#endif
 
 #ifdef SUPPORT_OTA
   httpUpdater.setup(&server, "/update");
@@ -230,25 +245,6 @@ void _end_ir()
 
 void loop()
 {
-  //espera leitura do tempo...
-  if (boot_time.isEmpty())
-  {
-    time_t tnow = time(nullptr);
-    if (tnow > 100000)
-    {
-      boot_time = String(ctime(&tnow));
-#ifdef DEBUG
-      _Serial.print(boot_time.c_str());
-#endif
-    }
-    else
-    {
-#ifdef DEBUG
-      _Serial.print(".");
-#endif
-    }
-  }
-
   server.handleClient();
 #ifdef SUPPORT_MDNS
   MDNS.update();

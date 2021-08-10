@@ -13,6 +13,8 @@
 #error This code is designed to run on ESP8266 and ESP8266-based boards! Please check your Tools->Board setting.
 #endif
 
+#define WIFIIR_VERSION __DATE__, __TIME__
+
 #define LED_PIN D5
 #define IR_LED_PIN D2
 #define IR_RECV_PIN D7
