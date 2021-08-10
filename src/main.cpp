@@ -115,17 +115,17 @@ void setup()
   while (time(nullptr) < 1609459200)
   {
 #ifdef DEBUG
-    Serial.print(".");
+    _Serial.print(".");
 #endif
     delay(100);
   }
 #ifdef DEBUG
-  Serial.println();
+  _Serial.println();
 #endif
   time_t tnow = time(nullptr);
   boot_time = String(ctime(&tnow));
 #ifdef DEBUG
-  Serial.println(boot_time.c_str());
+  _Serial.println(boot_time.c_str());
 #endif
 
 #ifdef SUPPORT_OTA
