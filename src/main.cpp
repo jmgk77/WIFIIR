@@ -68,12 +68,7 @@ void IRAM_ATTR blink_led()
 
 void setup()
 {
-
-#ifdef SUPPORT_LITTLEFS
   LittleFS.begin();
-#else
-  SPIFFS.begin();
-#endif
 
   WiFi.mode(WIFI_STA);
 

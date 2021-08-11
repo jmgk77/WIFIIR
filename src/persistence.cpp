@@ -14,11 +14,8 @@ void codes_load()
 #ifdef DEBUG
   _Serial.println("CODES::LOAD");
 #endif
-#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/codes.bin", "r");
-#else
-  File f = SPIFFS.open("/codes.bin", "r");
-#endif
+
   if (f)
   {
     CODES tmp;
@@ -57,11 +54,8 @@ void codes_save()
 #ifdef DEBUG
   _Serial.println("CODES::SAVE");
 #endif
-#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/codes.bin", "w");
-#else
-  File f = SPIFFS.open("/codes.bin", "w");
-#endif
+
   if (f)
   {
     //para cada entrada...
@@ -94,11 +88,8 @@ void telegram_load()
   _Serial.println("TOKEN::LOAD");
 #endif
   bt_token = "";
-#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/token.txt", "r");
-#else
-  File f = SPIFFS.open("/token.txt", "r");
-#endif
+
   if (f)
   {
     char b[64];
@@ -120,11 +111,8 @@ void telegram_save()
 #ifdef DEBUG
   _Serial.println("TOKEN::SAVE");
 #endif
-#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/token.txt", "w");
-#else
-  File f = SPIFFS.open("/token.txt", "w");
-#endif
+
   if (f)
   {
     char b[64];
@@ -145,11 +133,8 @@ void telegram_users_load()
 #ifdef DEBUG
   _Serial.println("TUSERS::LOAD");
 #endif
-#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/users.bin", "r");
-#else
-  File f = SPIFFS.open("/users.bin", "r");
-#endif
+
   if (f)
   {
     TUSERS tmp;
@@ -188,11 +173,8 @@ void telegram_users_save()
 #ifdef DEBUG
   _Serial.println("TUSERS::SAVE");
 #endif
-#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/users.bin", "w");
-#else
-  File f = SPIFFS.open("/users.bin", "w");
-#endif
+
   if (f)
   {
     //para cada entrada...
@@ -224,11 +206,8 @@ void wifiir_name_load()
 #ifdef DEBUG
   _Serial.println("NAME::LOAD");
 #endif
-#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/name.txt", "r");
-#else
-  File f = SPIFFS.open("/name.txt", "r");
-#endif
+
   if (f)
   {
     char tmp[32];
@@ -252,11 +231,8 @@ void wifiir_name_save()
 #ifdef DEBUG
   _Serial.println("NAME::SAVE");
 #endif
-#ifdef SUPPORT_LITTLEFS
   File f = LittleFS.open("/name.txt", "w");
-#else
-  File f = SPIFFS.open("/name.txt", "w");
-#endif
+
   if (f)
   {
     char tmp[32];

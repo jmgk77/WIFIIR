@@ -377,11 +377,7 @@ void _hexdump(void *ptr, int buflen)
 void dump_fs()
 {
     FSInfo fs_info;
-#ifdef SUPPORT_LITTLEFS
     LittleFS.info(fs_info);
-#else
-    SPIFFS.info(fs_info);
-#endif
     _Serial.printf("FS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\nmaxOpenFiles: %d\nmaxPathLength: %d\n",
                    fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
 }

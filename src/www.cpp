@@ -476,11 +476,7 @@ void handle_clear()
   _Serial.println(__func__);
 #endif
   ir_codes.clear();
-#ifdef SUPPORT_LITTLEFS
   LittleFS.remove("/codes.bin");
-#else
-  SPIFFS.remove("/codes.bin");
-#endif
   send_warning("Botões limpos!");
 }
 
@@ -532,11 +528,7 @@ void handle_files()
     char buf[512];
     int r;
     server.send(200, "application/octet-stream", "");
-#ifdef SUPPORT_LITTLEFS
     File f = LittleFS.open(fname, "r");
-#else
-    File f = SPIFFS.open(fname, "r");
-#endif
     do
     {
       r = f.read((uint8_t *)&buf, sizeof(buf));
@@ -548,11 +540,7 @@ void handle_files()
   //delete
   {
     String fname = server.arg("x");
-#ifdef SUPPORT_LITTLEFS
     LittleFS.remove(fname);
-#else
-    SPIFFS.remove(fname);
-#endif
     server.send(200, "text/html", "<script>document.location.href = '/f'</script>");
   }
   else
@@ -561,11 +549,8 @@ void handle_files()
     String s;
     char buf[16];
     server.send(200, "text/html", "");
-#ifdef SUPPORT_LITTLEFS
     Dir dir = LittleFS.openDir("/");
-#else
-    Dir dir = SPIFFS.openDir("/");
-#endif
+
     while (dir.next())
     {
       s = "<a download='" + dir.fileName() + "' href='f?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
@@ -587,11 +572,8 @@ void handle_info()
   _Serial.println(__func__);
 #endif
   FSInfo fs_info;
-#ifdef SUPPORT_LITTLEFS
   LittleFS.info(fs_info);
-#else
-  SPIFFS.info(fs_info);
-#endif
+
   char *buf = (char *)_malloc(512);
   sprintf_P(buf, PSTR("OK\n\nBuild Version: %s %s\nReset: %s\nLocal IP: %s\nBoot time: %s\n\
 ESP8266_INFO\ngetBootMode: %d\ngetSdkVersion: %s\ngetBootVersion: %d\ngetChipId: %08x\n\

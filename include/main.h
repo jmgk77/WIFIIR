@@ -30,7 +30,6 @@
 #define DEBUG_FS
 //#define DEBUG_SERIAL2FILE
 
-#define SUPPORT_LITTLEFS
 #define SUPPORT_OTA
 #define SUPPORT_TELEGRAM
 
@@ -67,11 +66,7 @@
 #include <SSDP_esp8266.h>
 #endif
 
-#ifdef SUPPORT_LITTLEFS
 #include <LittleFS.h>
-#else
-#include "FS.h"
-#endif
 
 #include <IRsend.h>
 #include <IRrecv.h>
