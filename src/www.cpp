@@ -13,47 +13,10 @@ const char html_header[] PROGMEM = "\
 <!DOCTYPE html><html lang='pt-br'>\
 <head><meta charset='UTF-8'/>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
-<meta http-equiv='cache-control' content='no-cache, no-store, must-revalidate'>\
-<link rel='shortcut icon' href='data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAABmJLR0QA/wD/AP+gvaeTAAABoklEQVRIie3UvWsUURQF8F+2VEyKsJgIiokRApZa+VGIKVRSmVJtAgr6B1gEO/VvsLDWNkbUCKKFhbZpwoYIClZ20WiXj7WYu8zsM7M7E6JVDlyYefecc997986wj11ioE9+FNO4gFM4hqHI/cQ3LOMDXuJ73Q1cwiI20a4Ym3iFi1UKnMCbGuZlsRheO+Iq1hLBFj5iTnZ9EzgYcTLW5vApuEXtOq6nRe4lxC087bWrHTCBZ4nPNu53COOx0El+wemCwRHclV1HC78jWniNO8Hp4Ex4FIsdh0HZtLTxFsMhGMFjbOjfk43gHg7tcHi1w/tQZxdNnEcj3q/gR4UCaazhcng0wrOpBLP+Huv3uIVJ+TBM4nbk0jGfLTMv4rPufk1V0Ezha0G3WqXQwyC/kx97FI+whF8RS8EdCU5TfroHVQrBgcLzzTAu68s6bpRoK2NG9+iXxTau9TJq9ErinPzH2wqzoYgZrERuAGdrHqILR/ECT2TfW4rByC0Ed88wHqbPMbaXxikW5H2ZryPs16MU7Zr8XWNMdpJ5//jq9vH/8QdSN6mUF/XpPQAAAABJRU5ErkJggg=='/>\
-<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css'>\
-<style>\
-.w,.w:focus,.w:hover{\
-background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQflBxMQGDNbPF7PAAAA7klEQVQoz5XRPUuCAQDE8d+jUgRGWImbNFj2EEEIDS1NCdHiEkV9nfCrFEWLSwQ1tTi0BCFPL0u0iWEEQihqTVKUFd12x3+5O/5Q8MUl0PX2HUhaEJo2go4nkZrWABi1ZlnDtUctJGUtSrt0rh3I2vGsoi5txiSaHjRklKQcBPacuRBal1TXxKSMllORVcXAlBeb5py40jOGV3FLNtw5NhFg1oojI4ry4ui5daZjS9V9gJi+ebtqqhpIW7Fg342Y/qBuQR7k5EBeYdhQ20JEDoevmlI2Lqks9REmPgFtXSG62j99ESqhIvrtvMD/9A6R0TwXv22H+QAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMS0wNy0xOVQxNjoyNDoyNSswMDowMHcnQy4AAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjEtMDctMTlUMTY6MjQ6MjUrMDA6MDAGevuSAAAAAElFTkSuQmCC);\
-background-repeat:no-repeat;\
-background-color:#f8f8f8}\
-.e,.e:focus,.e:hover{\
-background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAYQAAAGEBVSuQvQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAEKSURBVDiNldO9SgNBFAXgL0uw8AcUC5uAiKmshICdYOMjiNhaSCIWgr0voIW9T6CgjW1A8Aks7URQtBBBhARE1GImsI4TFw8sd4d775mzezg1AStYRM9PLOMCp4agHusCjjL9Ao9Yx0mOoIj1a8gFPVzjHht/KRiGc2zjFUt4x1lusFNBNEC7SkEDM5nFW7zkGFOCcUxl5p5iraWNIjk30MIz5nCJLh5yt+cUdOND+Ps5zOJN/KRUQRXmsSU4M/1fgqZg5x2usFNuVtnYxG58H8MxRssDbXn7csv75eWBLXWsYSKeR+JwH5tCqD6xh0Ol0P3yNUELk0JaP3AgSWxVFlajihshF/104BuZGSzACO/S3wAAAABJRU5ErkJggg==);\
-background-repeat:no-repeat;\
-background-color:#f8f8f8}\
-.u,.u:focus,.u:hover{\
-background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdAAAAHQBMYXlgQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAACVSURBVDiNY/z//z8DJYCJIt00N6AxkZGjMZGRA68J////x4qrUhjErXQYX1rpML6sSmEQx6UOqwuqUxnFD5xgvGSmxVJppsVSeeAE46XqVEZxolwAs7kgjDUJJlYQxpqEyyUENRMyhCjN+AwhWjMuQ0jSjM0QBnt9psekaEY2xF6f6TFDQwKDAKmaYdjPmUGccehnJgC+0ETc+bot3wAAAABJRU5ErkJggg==);\
-background-repeat:no-repeat;\
-background-color:#f8f8f8}\
-.d,.d:focus,.d:hover{\
-background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdAAAAHQBMYXlgQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAADmSURBVDiNxZM/isJAHIXfLzidhYUgITcIEa38B4JeYioN7CDYTilJZSF4DzsvobWVNl4hqK3lwrPaJYvJrtEFH0wz875vZmBGSOKVOC/R/yKYf0jlWXg+lSr6dSexWhmSKDKsVqZfdxLEIby2L5ciEquVaftyiUN4IFlIkoZJ4nshDuF1/pBYrUwnBf8QkEQ0gtsN5JwlsVqZbiDnaAQ3PX+3S5YkDyYJyXqJ8Vjc7V4OLb80A4Dd8XM5aLKxWDG5K+fdN5qg1gvk1AvkFE1Qy+tlnuAreihlAFhveM3r/Cp4JO//TDe1ACb01Xb7lgAAAABJRU5ErkJggg==);\
-background-repeat:no-repeat;\
-background-color:#f8f8f8}\
-.t,.t:focus,.t:hover{\
-background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQflBxMQGDNbPF7PAAAA40lEQVQoz43RvU4CYRCF4Wd1WaJBIo00NhSa0EinlfRejom34S14F8TEzlKjrSbGgoLEn8TChg27LJ+FwLKGwlNMMfPOmclMZKHIuYaxSNuVpzLNoWOZHadu5GaObLkTq7n3EiN14trI87zpDew6c0uMkVcPPlW158CIDRDUtfTR1UVfS13gFwgKsaYeOjroaYoVwsIhVxMEVmJNvnBgKvFXiWkJ5GuBvAqESjlUgWytQ/avETGYSOZnj5YPSExKILdtbMj8nkNjibQEUvu+DPAIBmYa3i0t2y58K1Y22NR06YMfisxC2gggFqAAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjEtMDctMTlUMTY6MjQ6MjUrMDA6MDB3J0MuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIxLTA3LTE5VDE2OjI0OjI1KzAwOjAwBnr7kgAAAABJRU5ErkJggg==);\
-background-repeat:no-repeat;\
-background-color:#f8f8f8}\
-.a{\
-width:10%}\
-.b,.g{\
-width:20%}\
-.g{\
-text-align:center}\
-.c{\
-width:60%}\
-.f{\
-display:flex;\
-flex-flow:row wrap;\
-padding:0;\
-overflow:hidden}\
-.x{\
-margin:0 auto;\
-text-align:center}\
-</style><title>WIFIIR</title></head>\
+<link rel='shortcut icon' href='icon.png' type='image/png'/>\
+<link rel='stylesheet' href='mini-default.min.css'>\
+<link rel='stylesheet' href='wifiir.css'>\
+<title>WIFIIR</title></head>\
 <body><header class='sticky'>\
 <div class='x card warning'>\
 <p class='x'>WIFIIR - Controle remoto IR via WIFI</p>\
@@ -84,6 +47,15 @@ void send_html(const char *h)
   _Serial.println(h);
 #endif
 }
+
+/*
+██████╗  ██████╗  ██████╗ ████████╗
+██╔══██╗██╔═══██╗██╔═══██╗╚══██╔══╝
+██████╔╝██║   ██║██║   ██║   ██║
+██╔══██╗██║   ██║██║   ██║   ██║
+██║  ██║╚██████╔╝╚██████╔╝   ██║
+╚═╝  ╚═╝ ╚═════╝  ╚═════╝    ╚═╝
+*/
 
 void handle_root()
 {
@@ -144,6 +116,15 @@ void send_warning(const char *txt, int timeout = 500)
   send_html(r);
   free(r);
 }
+
+/*
+ █████╗ ██████╗ ██████╗
+██╔══██╗██╔══██╗██╔══██╗
+███████║██║  ██║██║  ██║
+██╔══██║██║  ██║██║  ██║
+██║  ██║██████╔╝██████╔╝
+╚═╝  ╚═╝╚═════╝ ╚═════╝
+*/
 
 void handle_add()
 {
@@ -305,6 +286,15 @@ void handle_del()
   codes_save();
   _main_with_index(button);
 }
+
+/*
+ ██████╗ ██████╗ ███╗   ██╗███████╗██╗ ██████╗
+██╔════╝██╔═══██╗████╗  ██║██╔════╝██║██╔════╝
+██║     ██║   ██║██╔██╗ ██║█████╗  ██║██║  ███╗
+██║     ██║   ██║██║╚██╗██║██╔══╝  ██║██║   ██║
+╚██████╗╚██████╔╝██║ ╚████║██║     ██║╚██████╔╝
+ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝
+*/
 
 void handle_config()
 {
@@ -509,13 +499,46 @@ void handle_reboot()
   reboot();
 }
 
-void handle_404()
+void handle_info()
 {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  send_html("<p>Not found!</p>");
+  FSInfo fs_info;
+  LittleFS.info(fs_info);
+
+  char *buf = (char *)_malloc(512);
+  sprintf_P(buf, PSTR("OK\n\nBuild Version: %s %s\nReset: %s\nLocal IP: %s\nBoot time: %s\n\
+ESP8266_INFO\ngetBootMode: %d\ngetSdkVersion: %s\ngetBootVersion: %d\ngetChipId: %08x\n\
+getFlashChipSize: %d\ngetFlashChipRealSize: %d\ngetFlashChipSizeByChipId: %d\ngetFlashChipId: %08x\n\
+getFreeHeap: %d\n\nFS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\n\
+maxOpenFiles: %d\nmaxPathLength: %d\n\n"),
+            WIFIIR_VERSION,
+            ESP.getResetReason().c_str(), WiFi.localIP().toString().c_str(), boot_time.c_str(),
+            ESP.getBootMode(), ESP.getSdkVersion(), ESP.getBootVersion(), ESP.getChipId(), ESP.getFlashChipSize(),
+            ESP.getFlashChipRealSize(), ESP.getFlashChipSizeByChipId(), ESP.getFlashChipId(), ESP.getFreeHeap(),
+            fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
+  server.send(200, "text/txt", buf);
+  free(buf);
 }
+
+void handle_timeout()
+{
+#ifdef DEBUG_F
+  _Serial.println(__func__);
+#endif
+  _end_ir();
+  server.send(200, "text/txt", "OK");
+}
+
+/*
+███████╗███████╗
+██╔════╝██╔════╝
+█████╗  ███████╗
+██╔══╝  ╚════██║
+██║     ███████║
+╚═╝     ╚══════╝
+*/
 
 #ifdef DEBUG_FS
 void handle_files()
@@ -553,50 +576,65 @@ void handle_files()
 
     while (dir.next())
     {
-      s = "<a download='" + dir.fileName() + "' href='f?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
-      itoa(dir.fileSize(), buf, 10);
-      s += "    (" + String(buf) + ")    ";
-      const time_t t = dir.fileTime();
-      s += String(ctime(&t));
-      s += "<a href='f?x=" + dir.fileName() + "'>x</a><br>";
-      server.sendContent(s);
+      if (dir.isFile())
+      {
+        s = "<a download='" + dir.fileName() + "' href='f?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
+        itoa(dir.fileSize(), buf, 10);
+        s += "    (" + String(buf) + ")    ";
+        const time_t t = dir.fileTime();
+        s += String(ctime(&t));
+        s += "<a href='f?x=" + dir.fileName() + "'>x</a><br>";
+        server.sendContent(s);
+      }
     }
     server.sendContent("<br><br><a href='/'>BACK</a><br>");
   }
 }
 #endif
 
-void handle_info()
+/*
+ ██████╗ ███████╗███╗   ██╗███████╗██████╗ ██╗ ██████╗
+██╔════╝ ██╔════╝████╗  ██║██╔════╝██╔══██╗██║██╔════╝
+██║  ███╗█████╗  ██╔██╗ ██║█████╗  ██████╔╝██║██║
+██║   ██║██╔══╝  ██║╚██╗██║██╔══╝  ██╔══██╗██║██║
+╚██████╔╝███████╗██║ ╚████║███████╗██║  ██║██║╚██████╗
+ ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝╚═╝ ╚═════╝
+*/
+
+bool handle_generic(String path)
 {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  FSInfo fs_info;
-  LittleFS.info(fs_info);
-
-  char *buf = (char *)_malloc(512);
-  sprintf_P(buf, PSTR("OK\n\nBuild Version: %s %s\nReset: %s\nLocal IP: %s\nBoot time: %s\n\
-ESP8266_INFO\ngetBootMode: %d\ngetSdkVersion: %s\ngetBootVersion: %d\ngetChipId: %08x\n\
-getFlashChipSize: %d\ngetFlashChipRealSize: %d\ngetFlashChipSizeByChipId: %d\ngetFlashChipId: %08x\n\
-getFreeHeap: %d\n\nFS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\n\
-maxOpenFiles: %d\nmaxPathLength: %d\n\n"),
-            WIFIIR_VERSION,
-            ESP.getResetReason().c_str(), WiFi.localIP().toString().c_str(), boot_time.c_str(),
-            ESP.getBootMode(), ESP.getSdkVersion(), ESP.getBootVersion(), ESP.getChipId(), ESP.getFlashChipSize(),
-            ESP.getFlashChipRealSize(), ESP.getFlashChipSizeByChipId(), ESP.getFlashChipId(), ESP.getFreeHeap(),
-            fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
-  server.send(200, "text/txt", buf);
-  free(buf);
+  if (LittleFS.exists(path))
+  {
+    File f = LittleFS.open(path, "r");
+    server.streamFile(f, path.endsWith(".css") ? "text/css" : "image/png");
+    f.close();
+    return true;
+  }
+  return false;
 }
 
-void handle_timeout()
+void handle_404()
 {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  _end_ir();
-  server.send(200, "text/txt", "OK");
+  if (!handle_generic("www" + server.uri()))
+  {
+    server.send(404, "text/plain", "Not found!");
+  }
 }
+
+/*
+██╗███╗   ██╗███████╗████████╗ █████╗ ██╗     ██╗
+██║████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║     ██║
+██║██╔██╗ ██║███████╗   ██║   ███████║██║     ██║
+██║██║╚██╗██║╚════██║   ██║   ██╔══██║██║     ██║
+██║██║ ╚████║███████║   ██║   ██║  ██║███████╗███████╗
+╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝
+*/
 
 void install_www_handlers()
 {
