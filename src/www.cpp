@@ -113,7 +113,7 @@ void handle_root()
 <div class='a'><input type='button' class='d' onclick='window.location.href=\"/d?b=%d\";'/></div>\
 <div class='a'><input type='button' class='t' onclick='window.location.href=\"/t?b=%d\";'/></div>\
 "),
-              (*i).name, c, c, c, c, c);
+              i->name, c, c, c, c, c);
   }
 
   //nav
@@ -177,6 +177,7 @@ void handle_add2()
   _Serial.println(__func__);
 #endif
   String button = server.hasArg("b") ? server.arg("b") : "";
+  button.trim();
   //clicou add sem ter nome/codigo (ou passou muito tempo)
   if ((decoding_onoff) || (irin_timeout) || (button.isEmpty()))
   {
@@ -219,7 +220,9 @@ void handle_edit()
   if (server.hasArg("n"))
   {
     //chamou com nome, modifica e salva
-    strcpy((char *)(*i).name, server.arg("n").c_str());
+    String n = server.arg("n");
+    n.trim();
+    strcpy((char *)i->name, n.c_str());
     codes_save();
     send_warning("Botão editado!");
   }
@@ -234,7 +237,7 @@ void handle_edit()
 <input type='text' name='n' maxlength='31' value='%s'></div><div class='b'>\
 <input type='submit' value='Salvar'>\
 </div></form>"),
-              button, (*i).name);
+              button, i->name);
     send_html(r);
     free(r);
   }
@@ -399,6 +402,7 @@ void handle_token()
   _Serial.println(__func__);
 #endif
   bt_token = server.hasArg("k") ? server.arg("k") : "";
+  bt_token.trim();
   bt_setup();
   telegram_save();
   tb_kbd();
@@ -411,6 +415,7 @@ void handle_name()
   _Serial.println(__func__);
 #endif
   wifiir_subname = server.hasArg("n") ? server.arg("n") : "";
+  wifiir_subname.trim();
   wifiir_name_save();
   send_warning("Nome Salvo!");
 }
@@ -432,8 +437,8 @@ void handle_userman()
       sprintf_P(r + strlen(r), PSTR("<div class='b'></div><div class='b'><input type='checkbox' name='%d' value='1' %s></div>\
 <div class='b'>%08x</div><div class='b'>%s</div><div class='b'></div>"),
                 c,
-                (*i).auth ? "checked" : "",
-                (*i).id, (*i).name);
+                i->auth ? "checked" : "",
+                i->id, i->name);
     }
     strcat_P(r, PSTR("<div class='b'></div><div class='b'></div>\
 <input class='b' name='w' type='hidden' value='1'><input type='submit' value='Salvar'>\
@@ -451,8 +456,8 @@ void handle_userman()
     {
       TUSERS tmp;
       tmp.auth = server.hasArg(String(c)) ? true : false;
-      tmp.id = (*i).id;
-      strcpy(tmp.name, (*i).name);
+      tmp.id = i->id;
+      strcpy(tmp.name, i->name);
       tmp_users.push_back(tmp);
     }
     bt_users.clear();
@@ -527,9 +532,9 @@ void handle_files()
     int r;
     server.send(200, "application/octet-stream", "");
 #ifdef SUPPORT_LITTLEFS
-    File f = LittleFS.open(fname.c_str(), "r");
+    File f = LittleFS.open(fname, "r");
 #else
-    File f = SPIFFS.open(fname.c_str(), "r");
+    File f = SPIFFS.open(fname, "r");
 #endif
     do
     {
@@ -543,9 +548,9 @@ void handle_files()
   {
     String fname = server.arg("x");
 #ifdef SUPPORT_LITTLEFS
-    LittleFS.remove(fname.c_str());
+    LittleFS.remove(fname);
 #else
-    SPIFFS.remove(fname.c_str());
+    SPIFFS.remove(fname);
 #endif
     server.send(200, "text/html", "<script>document.location.href = '/f'</script>");
   }
@@ -568,7 +573,7 @@ void handle_files()
       const time_t t = dir.fileTime();
       s += String(ctime(&t));
       s += "<a href='f?x=" + dir.fileName() + "'>x</a><br>";
-      server.sendContent(s.c_str());
+      server.sendContent(s);
     }
     server.sendContent("<br><br><a href='/'>BACK</a><br>");
   }

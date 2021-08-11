@@ -334,7 +334,7 @@ void dump_ir(CODES irresult)
         s = "ERROR!";
     }
     _Serial.print("PROTOCOL: ");
-    _Serial.println(s.c_str());
+    _Serial.println(s);
     _Serial.print("VALUE: ");
     _Serial.println(irresult.results.value);
     _Serial.print("SIZE: ");

@@ -94,6 +94,16 @@ void setup()
   dump_esp8266();
 #endif
 
+  //load device name
+  wifiir_name_load();
+  String device_name = "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
+#ifdef DEBUG
+  _Serial.printf("Device Name: %s\n", device_name.c_str());
+#endif
+
+  //set name in router
+  WiFi.hostname(device_name);
+
   if (!wm.autoConnect("WIFIIR"))
   {
 #ifdef DEBUG
@@ -125,7 +135,7 @@ void setup()
   time_t tnow = time(nullptr);
   boot_time = String(ctime(&tnow));
 #ifdef DEBUG
-  _Serial.println(boot_time.c_str());
+  _Serial.println(boot_time);
 #endif
 
 #ifdef SUPPORT_OTA
@@ -141,14 +151,8 @@ void setup()
 #endif
 
   //discovery protocols
-  wifiir_name_load();
-  String s = "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
-#ifdef DEBUG
-  _Serial.printf("Discovery Protocols Name: %s\n", s.c_str());
-#endif
-
 #ifdef SUPPORT_MDNS
-  if (MDNS.begin(s.c_str()))
+  if (MDNS.begin(device_name))
   {
 #ifdef DEBUG
     _Serial.println("MDNS OK");
@@ -164,7 +168,7 @@ void setup()
 #endif
 
 #ifdef SUPPORT_NETBIOS
-  if (NBNS.begin(s.c_str()))
+  if (NBNS.begin(device_name.c_str()))
   {
 #ifdef DEBUG
     _Serial.println("NETBIOS OK");
@@ -179,7 +183,7 @@ void setup()
 #endif
 
 #ifdef SUPPORT_LLMNR
-  if (LLMNR.begin(s.c_str()))
+  if (LLMNR.begin(device_name.c_str()))
   {
 #ifdef DEBUG
     _Serial.println("LLMNR OK");
@@ -193,7 +197,7 @@ void setup()
   }
 #endif
 #ifdef SUPPORT_SSDP
-  SSDP_esp8266.setName(s.c_str());
+  SSDP_esp8266.setName(device_name);
   SSDP_esp8266.setDeviceType("urn:schemas-upnp-org:device:WIFIIR:1");
   SSDP_esp8266.setSchemaURL("description.xml");
   SSDP_esp8266.setSerialNumber(ESP.getChipId());
