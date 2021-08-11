@@ -311,7 +311,7 @@ void handle_config()
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(2048); //218+32+512+170+400+64+169+172+265+28+20
+  char *r = (char *)_malloc(218 + 32 + 517 + 170 + 454 + 64 + 185 + 172 + 265 + 28 + 20 + 61);
   sprintf_P(r, PSTR("\
 <form class='f' action='/w' method='POST'><div class='b'>Device name</div>\
 <div class='c'><input type='text' name='n' maxlength='31' value='%s'/></div>\
@@ -328,12 +328,13 @@ void handle_config()
 #ifdef SUPPORT_TELEGRAM
   sprintf_P(r + strlen(r), PSTR("\
 <form class='f' action='/k' method='POST'><div class='b'>Telegram Token</div>\
-<div class='c'><input type='checkbox' onchange='document.getElementById(\"k\").disabled=!this.checked;document.getElementById(\"bk\").disabled=!this.checked;'>\
-<input type='text' id='k' name='k' disabled value='%s' maxlength='63'/></div>\
-<div class='b'><input type='submit' id='bk' disabled value='Salvar'></div></form>"),
+<div class='c'><input type='checkbox' onchange='\
+document.getElementById(\"a\").disabled=!this.checked;document.getElementById(\"b\").disabled=!this.checked;document.getElementById(\"c\").disabled=!this.checked;\
+'><input type='text' id='a' name='k' disabled value='%s' maxlength='63'/></div>\
+<div class='b'><input type='submit' id='b' disabled value='Salvar'></div></form>"),
             bt_token.c_str());
   strcat_P(r, PSTR("\
-<form class='f' action='/x' method='POST'><div class='b'>Gerenciar usuários</div><div class='c'></div><div class='b'><input type='submit' value='Gerenciar'></div></form>"));
+<form class='f' action='/x' method='POST'><div class='b'>Gerenciar usuários</div><div class='c'></div><div class='b'><input type='submit' id='c' disabled value='Gerenciar'></div></form>"));
 #ifdef DEBUG_GENRNDUSR
   strcat_P(r, PSTR("\
 <form class='f' action='/z' method='POST'><div class='b'>Gerar usuários aleatórios</div><div class='c'></div><div class='b'><input type='submit' value='Gerar'></div></form>"));
