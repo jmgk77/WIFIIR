@@ -52,6 +52,20 @@ public:
         _end();
         Serial.println(t);
     }
+    void println(String t)
+    {
+        _start();
+        f.println(t.c_str());
+        _end();
+        Serial.println(t.c_str());
+    }
+    void println()
+    {
+        _start();
+        f.println("");
+        _end();
+        Serial.println("");
+    }
     void printf(const char *format, ...)
     {
         char buf[1024];

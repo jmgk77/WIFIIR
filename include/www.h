@@ -11,11 +11,11 @@
 
 #include "main.h"
 
-extern ESP8266WebServer server;
-extern ESP8266WebServer server;
+//extern ESP8266WebServer server;
 extern CODES irresult;
 extern IRsend irsend;
-extern WiFiManager wm;
+
+extern AsyncWebServer server;
 
 extern bool decoding_onoff;
 extern bool irin_timeout;
