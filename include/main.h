@@ -27,15 +27,15 @@
 //#define DEBUG_GENRNDBTN 4
 //#define DEBUG_GENRNDUSR 8
 //#define DEBUG_ESP
-//#define DEBUG_FS
+#define DEBUG_FS
 //#define DEBUG_SERIAL2FILE
 
-//#define SUPPORT_OTA
-//#define SUPPORT_TELEGRAM
+#define SUPPORT_OTA
+#define SUPPORT_TELEGRAM
 
-//#define SUPPORT_MDNS
+#define SUPPORT_MDNS
 //#define SUPPORT_NETBIOS
-//#define SUPPORT_LLMNR
+#define SUPPORT_LLMNR
 //#define SUPPORT_SSDP
 
 #ifndef DEBUG_MALLOC
@@ -53,6 +53,10 @@
 #include <ESPAsyncWebServer.h>
 
 #include <ESPAsyncWiFiManager.h>
+
+#ifdef SUPPORT_OTA
+#include <Updater.h>
+#endif
 
 #ifdef SUPPORT_MDNS
 #include <ESP8266mDNS.h>

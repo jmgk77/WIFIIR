@@ -37,12 +37,17 @@ void send_html(AsyncWebServerRequest *request, const char *h)
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  String s = html_header;
+  String s = String(html_header);
   s += "<div class='x card'><p class='x'>";
-  s += "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
+  s += "WIFIIR";
+  if (!wifiir_subname.isEmpty())
+  {
+    s += String("-");
+    s += wifiir_subname;
+  }
   s += "</p></div><br>";
-  s += h;
-  s += html_footer;
+  s += String(h);
+  s += String(html_footer);
   request->send(200, "text/html", s);
 #ifdef DEBUG_SEND
   _Serial.println(h);
@@ -334,7 +339,7 @@ document.getElementById(\"a\").disabled=!this.checked;document.getElementById(\"
 #ifdef SUPPORT_OTA
   strcat_P(r, PSTR("\
 <form class='f' method='POST' action='/update' enctype='multipart/form-data'>\
-<div class='b'>Atualizar Firmware</div><div class='c'><input type='file' accept='.bin,.bin.gz' name='firmware'></div><div class='b'>\
+<div class='b'>Atualizar Firmware</div><div class='c'><input type='file' accept='.bin,.bin.gz' name='update'></div><div class='b'>\
 <input type='submit' value='Atualizar'></div></form>"));
 #endif
   sprintf(r + strlen(r), "<br>Build Version: %s %s<br><br>", __DATE__, __TIME__);
@@ -425,7 +430,7 @@ void handle_userman(AsyncWebServerRequest *request)
 <input class='b' name='w' type='hidden' value='1'><input type='submit' value='Salvar'>\
 <div class='b'></div><div class='b'></div></form>"));
 
-    send_html(*request, r);
+    send_html(request, r);
     free(r);
   }
   else
@@ -436,7 +441,8 @@ void handle_userman(AsyncWebServerRequest *request)
     for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i, c++)
     {
       TUSERS tmp;
-      tmp.auth = request->hasArg(String(c)) ? true : false;
+      String cc = String(c);
+      tmp.auth = request->hasArg(cc.c_str()) ? true : false;
       tmp.id = i->id;
       strcpy(tmp.name, i->name);
       tmp_users.push_back(tmp);
@@ -544,78 +550,54 @@ void handle_timeout(AsyncWebServerRequest *request)
 #ifdef DEBUG_FS
 void handle_files(AsyncWebServerRequest *request)
 {
-  request->setContentLength(CONTENT_LENGTH_UNKNOWN);
-  //download
-  if (request->hasArg("n"))
-  {
-    String fname = request->arg("n");
-    char buf[512];
-    int r;
-    request.send(200, "application/octet-stream", "");
-    File f = LittleFS.open(fname, "r");
-    do
-    {
-      r = f.read((uint8_t *)&buf, sizeof(buf));
-      request.sendContent(buf, r);
-    } while (r == sizeof(buf));
-    f.close();
-  }
-  else if (request->hasArg("x"))
+  // request->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  // //download
+  // if (request->hasArg("n"))
+  // {
+  //   String fname = request->arg("n");
+  //   char buf[512];
+  //   int r;
+  //   request.send(200, "application/octet-stream", "");
+  //   File f = LittleFS.open(fname, "r");
+  //   do
+  //   {
+  //     r = f.read((uint8_t *)&buf, sizeof(buf));
+  //     request.sendContent(buf, r);
+  //   } while (r == sizeof(buf));
+  //   f.close();
+  // }
+  // else
+  if (request->hasArg("x"))
   //delete
   {
     String fname = request->arg("x");
     LittleFS.remove(fname);
-    request.send(200, "text/html", "<script>document.location.href = '/f'</script>");
+    request->send(200, "text/html", "<script>document.location.href = '/f'</script>");
   }
   else
   //dir list
   {
     String s;
     char buf[16];
-    request.send(200, "text/html", "");
     Dir dir = LittleFS.openDir("/");
 
     while (dir.next())
     {
       if (dir.isFile())
       {
-        s = "<a download='" + dir.fileName() + "' href='f?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
+        s += "<a download='" + dir.fileName() + "' href='f?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
         itoa(dir.fileSize(), buf, 10);
         s += "    (" + String(buf) + ")    ";
         const time_t t = dir.fileTime();
         s += String(ctime(&t));
         s += "<a href='f?x=" + dir.fileName() + "'>x</a><br>";
-        request.sendContent(s);
       }
     }
-    request.sendContent("<br><br><a href='/'>BACK</a><br>");
+    s += "<br><br><a href='/'>BACK</a><br>";
+    request->send(200, "text/html", s);
   }
 }
 #endif
-
-/*
- ██████╗ ███████╗███╗   ██╗███████╗██████╗ ██╗ ██████╗
-██╔════╝ ██╔════╝████╗  ██║██╔════╝██╔══██╗██║██╔════╝
-██║  ███╗█████╗  ██╔██╗ ██║█████╗  ██████╔╝██║██║
-██║   ██║██╔══╝  ██║╚██╗██║██╔══╝  ██╔══██╗██║██║
-╚██████╔╝███████╗██║ ╚████║███████╗██║  ██║██║╚██████╗
- ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝╚═╝ ╚═════╝
-*/
-
-// bool handle_generic(String path)
-// {
-// #ifdef DEBUG_F
-//   _Serial.println(__func__);
-// #endif
-//   if (LittleFS.exists(path))
-//   {
-//     File f = LittleFS.open(path, "r");
-//     request.streamFile(f, path.endsWith(".css") ? "text/css" : "image/png");
-//     f.close();
-//     return true;
-//   }
-//   return false;
-// }
 
 void handle_404(AsyncWebServerRequest *request)
 {
@@ -627,6 +609,58 @@ void handle_404(AsyncWebServerRequest *request)
   request->send(404, "text/plain", "Not found!");
   // }
 }
+
+/*
+██╗   ██╗██████╗ ██████╗  █████╗ ████████╗███████╗
+██║   ██║██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
+██║   ██║██████╔╝██║  ██║███████║   ██║   █████╗
+██║   ██║██╔═══╝ ██║  ██║██╔══██║   ██║   ██╔══╝
+╚██████╔╝██║     ██████╔╝██║  ██║   ██║   ███████╗
+ ╚═════╝ ╚═╝     ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+*/
+
+#ifdef SUPPORT_OTA
+size_t content_len;
+
+void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final)
+{
+  if (!index)
+  {
+    Serial.println("Update");
+    content_len = request->contentLength();
+    // if filename includes spiffs, update the spiffs partition
+    Update.runAsync(true);
+    if (!Update.begin(content_len, U_FLASH))
+    {
+      Update.printError(Serial);
+    }
+    request->send(200, "text/html", "<head><meta http-equiv='refresh' content='10;URL=/'/></head><body>Upload complete! Please wait while the device reboots</body>");
+  }
+
+  if (Update.write(data, len) != len)
+  {
+    Update.printError(Serial);
+  }
+  else
+  {
+    Serial.printf("Progress: %d%%\n", (Update.progress() * 100) / Update.size());
+  }
+
+  if (final)
+  {
+    if (!Update.end(true))
+    {
+      Update.printError(Serial);
+    }
+    else
+    {
+      Serial.println("Update complete");
+      Serial.flush();
+      ESP.restart();
+    }
+  }
+}
+#endif
 
 /*
 ██╗███╗   ██╗███████╗████████╗ █████╗ ██╗     ██╗
@@ -669,11 +703,19 @@ void install_www_handlers()
   server.on("/l", handle_clear);
   server.on("/w", handle_name);
 #ifdef SUPPORT_SSDP
-  server.on("/description.xml", HTTP_GET, []()
-            { SSDP_esp8266.schema(request.client()); });
+  server.on("/description.xml", HTTP_GET, [](AsyncWebServerRequest *request)
+            { SSDP_esp8266.schema(client); });
 #endif
 #ifdef DEBUG_FS
   server.on("/f", handle_files);
+#endif
+#ifdef SUPPORT_OTA
+  server.on(
+      "/update", HTTP_POST,
+      [](AsyncWebServerRequest *request) {},
+      [](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data,
+         size_t len, bool final)
+      { handleDoUpdate(request, filename, index, data, len, final); });
 #endif
   server.on("/c", handle_info);
   server.on("/v", handle_timeout);

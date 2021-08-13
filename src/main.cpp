@@ -33,10 +33,6 @@ AsyncWebServer server(80);
 DNSServer dns;
 AsyncWiFiManager wm(&server, &dns);
 
-#ifdef SUPPORT_OTA
-ESP8266HTTPUpdateServer httpUpdater;
-#endif
-
 bool decoding_onoff;
 bool toggle;
 
@@ -135,13 +131,9 @@ void setup()
   _Serial.println(boot_time);
 #endif
 
-#ifdef SUPPORT_OTA
-  httpUpdater.setup(&server, "/update");
-#endif
-
   install_www_handlers();
 
-  //server.begin();
+  server.begin();
 
 #ifdef DEBUG_ESP
   dump_fs();
