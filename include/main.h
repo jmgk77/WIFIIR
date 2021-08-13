@@ -51,7 +51,8 @@
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <ESPAsync_WiFiManager.h>
+
+#include <ESPAsyncWiFiManager.h>
 
 #ifdef SUPPORT_MDNS
 #include <ESP8266mDNS.h>

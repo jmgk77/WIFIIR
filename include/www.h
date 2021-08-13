@@ -14,6 +14,7 @@
 //extern ESP8266WebServer server;
 extern CODES irresult;
 extern IRsend irsend;
+extern AsyncWiFiManager wm;
 
 extern AsyncWebServer server;
 

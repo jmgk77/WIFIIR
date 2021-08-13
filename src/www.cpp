@@ -487,7 +487,7 @@ void handle_reset(AsyncWebServerRequest *request)
   _Serial.println(__func__);
 #endif
   send_warning(request, "Reseting...", 5000);
-  //wm.resetSettings();
+  wm.resetSettings();
   reboot();
 }
 
