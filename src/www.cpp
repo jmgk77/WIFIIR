@@ -188,6 +188,15 @@ void handle_add2(AsyncWebServerRequest *request)
   }
 }
 
+/*
+ ██████╗ ██████╗ ███████╗██████╗  █████╗ ████████╗██╗ ██████╗ ███╗   ██╗███████╗
+██╔═══██╗██╔══██╗██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+██║   ██║██████╔╝█████╗  ██████╔╝███████║   ██║   ██║██║   ██║██╔██╗ ██║███████╗
+██║   ██║██╔═══╝ ██╔══╝  ██╔══██╗██╔══██║   ██║   ██║██║   ██║██║╚██╗██║╚════██║
+╚██████╔╝██║     ███████╗██║  ██║██║  ██║   ██║   ██║╚██████╔╝██║ ╚████║███████║
+ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+*/
+
 void handle_press(AsyncWebServerRequest *request)
 {
 #ifdef DEBUG_F
@@ -550,23 +559,6 @@ void handle_timeout(AsyncWebServerRequest *request)
 #ifdef DEBUG_FS
 void handle_files(AsyncWebServerRequest *request)
 {
-  // request->setContentLength(CONTENT_LENGTH_UNKNOWN);
-  // //download
-  // if (request->hasArg("n"))
-  // {
-  //   String fname = request->arg("n");
-  //   char buf[512];
-  //   int r;
-  //   request.send(200, "application/octet-stream", "");
-  //   File f = LittleFS.open(fname, "r");
-  //   do
-  //   {
-  //     r = f.read((uint8_t *)&buf, sizeof(buf));
-  //     request.sendContent(buf, r);
-  //   } while (r == sizeof(buf));
-  //   f.close();
-  // }
-  // else
   if (request->hasArg("x"))
   //delete
   {
@@ -585,7 +577,8 @@ void handle_files(AsyncWebServerRequest *request)
     {
       if (dir.isFile())
       {
-        s += "<a download='" + dir.fileName() + "' href='f?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
+        //link to mounted filesystem
+        s += "<a download='" + dir.fileName() + "' href='ff/" + dir.fileName() + "'>" + dir.fileName() + "</a>";
         itoa(dir.fileSize(), buf, 10);
         s += "    (" + String(buf) + ")    ";
         const time_t t = dir.fileTime();
@@ -604,10 +597,7 @@ void handle_404(AsyncWebServerRequest *request)
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  // if (!handle_generic("www" + request.uri()))
-  // {
   request->send(404, "text/plain", "Not found!");
-  // }
 }
 
 /*
@@ -620,42 +610,53 @@ void handle_404(AsyncWebServerRequest *request)
 */
 
 #ifdef SUPPORT_OTA
-size_t content_len;
 
-void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final)
+void handle_update(AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final)
 {
   if (!index)
   {
-    Serial.println("Update");
-    content_len = request->contentLength();
-    // if filename includes spiffs, update the spiffs partition
+#ifdef DEBUG
+    _Serial.println("Update");
+#endif
     Update.runAsync(true);
-    if (!Update.begin(content_len, U_FLASH))
+    if (!Update.begin(request->contentLength(), U_FLASH))
     {
+#ifdef DEBUG
       Update.printError(Serial);
+#endif
     }
     request->send(200, "text/html", "<head><meta http-equiv='refresh' content='10;URL=/'/></head><body>Upload complete! Please wait while the device reboots</body>");
   }
 
   if (Update.write(data, len) != len)
   {
+#ifdef DEBUG
     Update.printError(Serial);
+#endif
   }
   else
   {
-    Serial.printf("Progress: %d%%\n", (Update.progress() * 100) / Update.size());
+#ifdef DEBUG
+    _Serial.printf("Progress: %d%%\n", (Update.progress() * 100) / Update.size());
+#endif
   }
 
   if (final)
   {
     if (!Update.end(true))
     {
+#ifdef DEBUG
       Update.printError(Serial);
+#endif
     }
     else
     {
-      Serial.println("Update complete");
-      Serial.flush();
+#ifdef DEBUG
+      _Serial.println("Update complete");
+#ifndef DEBUG_SERIAL2FILE
+      _Serial.flush();
+#endif
+#endif
       ESP.restart();
     }
   }
@@ -679,6 +680,7 @@ void install_www_handlers()
 
   //abcdefgHIJklMNOpQrstuvwxyz
   //description.xml
+  //ff
   server.on("/", handle_root);
   server.on("/a", handle_add);
   server.on("/p", handle_press);
@@ -704,21 +706,24 @@ void install_www_handlers()
   server.on("/w", handle_name);
 #ifdef SUPPORT_SSDP
   server.on("/description.xml", HTTP_GET, [](AsyncWebServerRequest *request)
-            { SSDP_esp8266.schema(client); });
+            { request->send(200, "text/xml", SSDP_esp8266.schema()); });
 #endif
 #ifdef DEBUG_FS
   server.on("/f", handle_files);
+  server.serveStatic("/ff", LittleFS, "/");
 #endif
 #ifdef SUPPORT_OTA
+  //update handler
   server.on(
       "/update", HTTP_POST,
       [](AsyncWebServerRequest *request) {},
       [](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data,
          size_t len, bool final)
-      { handleDoUpdate(request, filename, index, data, len, final); });
+      { handle_update(request, filename, index, data, len, final); });
 #endif
   server.on("/c", handle_info);
   server.on("/v", handle_timeout);
   server.onNotFound(handle_404);
+  //mount www filesystem
   server.serveStatic("/", LittleFS, "/www");
 }

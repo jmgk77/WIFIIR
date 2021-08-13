@@ -36,7 +36,7 @@
 #define SUPPORT_MDNS
 //#define SUPPORT_NETBIOS
 #define SUPPORT_LLMNR
-//#define SUPPORT_SSDP
+#define SUPPORT_SSDP
 
 #ifndef DEBUG_MALLOC
 #define _malloc malloc
