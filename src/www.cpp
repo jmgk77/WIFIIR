@@ -85,6 +85,15 @@ void send_html(const char *h)
 #endif
 }
 
+/*
+██████╗  ██████╗  ██████╗ ████████╗
+██╔══██╗██╔═══██╗██╔═══██╗╚══██╔══╝
+██████╔╝██║   ██║██║   ██║   ██║
+██╔══██╗██║   ██║██║   ██║   ██║
+██║  ██║╚██████╔╝╚██████╔╝   ██║
+╚═╝  ╚═╝ ╚═════╝  ╚═════╝    ╚═╝
+*/
+
 void handle_root()
 {
 #ifdef DEBUG_F
@@ -144,6 +153,15 @@ void send_warning(const char *txt, int timeout = 500)
   send_html(r);
   free(r);
 }
+
+/*
+ █████╗ ██████╗ ██████╗
+██╔══██╗██╔══██╗██╔══██╗
+███████║██║  ██║██║  ██║
+██╔══██║██║  ██║██║  ██║
+██║  ██║██████╔╝██████╔╝
+╚═╝  ╚═╝╚═════╝ ╚═════╝
+*/
 
 void handle_add()
 {
@@ -305,6 +323,15 @@ void handle_del()
   codes_save();
   _main_with_index(button);
 }
+
+/*
+ ██████╗ ██████╗ ███╗   ██╗███████╗██╗ ██████╗
+██╔════╝██╔═══██╗████╗  ██║██╔════╝██║██╔════╝
+██║     ██║   ██║██╔██╗ ██║█████╗  ██║██║  ███╗
+██║     ██║   ██║██║╚██╗██║██╔══╝  ██║██║   ██║
+╚██████╗╚██████╔╝██║ ╚████║██║     ██║╚██████╔╝
+ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝
+*/
 
 void handle_config()
 {
@@ -517,6 +544,15 @@ void handle_404()
   send_html("<p>Not found!</p>");
 }
 
+/*
+███████╗███████╗
+██╔════╝██╔════╝
+█████╗  ███████╗
+██╔══╝  ╚════██║
+██║     ███████║
+╚═╝     ╚══════╝
+*/
+
 #ifdef DEBUG_FS
 void handle_files()
 {
@@ -553,13 +589,16 @@ void handle_files()
 
     while (dir.next())
     {
-      s = "<a download='" + dir.fileName() + "' href='f?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
-      itoa(dir.fileSize(), buf, 10);
-      s += "    (" + String(buf) + ")    ";
-      const time_t t = dir.fileTime();
-      s += String(ctime(&t));
-      s += "<a href='f?x=" + dir.fileName() + "'>x</a><br>";
-      server.sendContent(s);
+      if (dir.isFile())
+      {
+        s = "<a download='" + dir.fileName() + "' href='f?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
+        itoa(dir.fileSize(), buf, 10);
+        s += "    (" + String(buf) + ")    ";
+        const time_t t = dir.fileTime();
+        s += String(ctime(&t));
+        s += "<a href='f?x=" + dir.fileName() + "'>x</a><br>";
+        server.sendContent(s);
+      }
     }
     server.sendContent("<br><br><a href='/'>BACK</a><br>");
   }
@@ -597,6 +636,15 @@ void handle_timeout()
   _end_ir();
   server.send(200, "text/txt", "OK");
 }
+
+/*
+██╗███╗   ██╗███████╗████████╗ █████╗ ██╗     ██╗
+██║████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║     ██║
+██║██╔██╗ ██║███████╗   ██║   ███████║██║     ██║
+██║██║╚██╗██║╚════██║   ██║   ██╔══██║██║     ██║
+██║██║ ╚████║███████║   ██║   ██║  ██║███████╗███████╗
+╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝
+*/
 
 void install_www_handlers()
 {
