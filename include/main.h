@@ -109,6 +109,7 @@ typedef struct
 } TUSERS;
 #endif
 
+#include "Version.h"
 #include "_debug.h"
 #include "persistence.h"
 #include "www.h"

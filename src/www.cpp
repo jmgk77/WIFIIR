@@ -373,7 +373,7 @@ document.getElementById(\"a\").disabled=!this.checked;document.getElementById(\"
 <div class='b'>Atualizar Firmware</div><div class='c'><input type='file' accept='.bin,.bin.gz' name='firmware'></div><div class='b'>\
 <input type='submit' value='Atualizar'></div></form>"));
 #endif
-  sprintf(r + strlen(r), "<br>Build Version: %s %s<br><br>", __DATE__, __TIME__);
+  sprintf(r + strlen(r), "<br>Build Version: %s (%s)<br><br>", VERSION, BUILD_TIMESTAMP);
 #ifdef DEBUG
   sprintf(r + strlen(r), "<a href='/c'>HW Info</a><br><a href='/f'>File browser</a><br>");
 #endif
@@ -614,12 +614,12 @@ void handle_info()
   LittleFS.info(fs_info);
 
   char *buf = (char *)_malloc(512);
-  sprintf_P(buf, PSTR("OK\n\nBuild Version: %s %s\nReset: %s\nLocal IP: %s\nBoot time: %s\n\
+  sprintf_P(buf, PSTR("OK\n\nBuild Version: %s (%s)\nReset: %s\nLocal IP: %s\nBoot time: %s\n\
 ESP8266_INFO\ngetBootMode: %d\ngetSdkVersion: %s\ngetBootVersion: %d\ngetChipId: %08x\n\
 getFlashChipSize: %d\ngetFlashChipRealSize: %d\ngetFlashChipSizeByChipId: %d\ngetFlashChipId: %08x\n\
 getFreeHeap: %d\n\nFS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\n\
 maxOpenFiles: %d\nmaxPathLength: %d\n\n"),
-            WIFIIR_VERSION,
+            VERSION, BUILD_TIMESTAMP,
             ESP.getResetReason().c_str(), WiFi.localIP().toString().c_str(), boot_time.c_str(),
             ESP.getBootMode(), ESP.getSdkVersion(), ESP.getBootVersion(), ESP.getChipId(), ESP.getFlashChipSize(),
             ESP.getFlashChipRealSize(), ESP.getFlashChipSizeByChipId(), ESP.getFlashChipId(), ESP.getFreeHeap(),

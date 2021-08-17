@@ -75,8 +75,7 @@ void setup()
   _Serial.begin(115200);
   _Serial.println("");
   _Serial.println("WIFIIR - Starting");
-  _Serial.printf("Build Version: %s %s\n", WIFIIR_VERSION);
-
+  _Serial.printf("Build Version: %s (%s)\n", VERSION, BUILD_TIMESTAMP);
 #ifdef DEBUG
   _Serial.setDebugOutput(true);
   wm.setDebugOutput(true);
