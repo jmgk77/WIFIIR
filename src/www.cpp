@@ -45,6 +45,8 @@ width:20%}\
 text-align:center}\
 .c{\
 width:60%}\
+.h{\
+width:40%}\
 .f{\
 display:flex;\
 flex-flow:row wrap;\
@@ -99,7 +101,7 @@ void handle_root()
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(15 + (10 * (552 + 32)) + 15 + 24 + 42 + 24 + 12);
+  char *r = (char *)_malloc(15 + (10 * (542 + 32)) + 15 + 24 + 42 + 24 + 12);
 
   int index = server.hasArg("i") ? atoi(server.arg("i").c_str()) : 0;
 
@@ -115,7 +117,7 @@ void handle_root()
   {
     sprintf_P(r + strlen(r), PSTR("\
 <div class='a'></div>\
-<div style='width:40%%'>%s</div>\
+<div class='h'>%s</div>\
 <div class='a'><input type='button' class='w' onclick='window.location.href=\"/p?b=%d\";'/></div>\
 <div class='a'><input type='button' class='e' onclick='window.location.href=\"/e?b=%d\";'/></div>\
 <div class='a'><input type='button' class='u' onclick='window.location.href=\"/u?b=%d\";'/></div>\
@@ -338,7 +340,7 @@ void handle_config()
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(218 + 32 + 517 + 170 + 454 + 64 + 185 + 172 + 265 + 28 + 20 + 61);
+  char *r = (char *)_malloc(218 + 32 + 517 + 170 + 454 + 64 + 185 + 172 + 172 + 265 + 28 + 20 + 61);
   sprintf_P(r, PSTR("\
 <form class='f' action='/w' method='POST'><div class='b'>Device name</div>\
 <div class='c'><input type='text' name='n' maxlength='31' value='%s'/></div>\
@@ -366,6 +368,10 @@ document.getElementById(\"a\").disabled=!this.checked;document.getElementById(\"
   strcat_P(r, PSTR("\
 <form class='f' action='/z' method='POST'><div class='b'>Gerar usuários aleatórios</div><div class='c'></div><div class='b'><input type='submit' value='Gerar'></div></form>"));
 #endif
+#endif
+#ifdef SUPPORT_IMPORT
+  strcat_P(r, PSTR("\
+<form class='f' action='/q' method='POST'><div class='b'>Importar de WIFIIRs</div><div class='c'></div><div class='b'><input type='submit' value='Importar'></div></form>"));
 #endif
 #ifdef SUPPORT_OTA
   strcat_P(r, PSTR("\
@@ -545,6 +551,140 @@ void handle_404()
 }
 
 /*
+██╗███╗   ███╗██████╗  ██████╗ ██████╗ ████████╗
+██║████╗ ████║██╔══██╗██╔═══██╗██╔══██╗╚══██╔══╝
+██║██╔████╔██║██████╔╝██║   ██║██████╔╝   ██║
+██║██║╚██╔╝██║██╔═══╝ ██║   ██║██╔══██╗   ██║
+██║██║ ╚═╝ ██║██║     ╚██████╔╝██║  ██║   ██║
+╚═╝╚═╝     ╚═╝╚═╝      ╚═════╝ ╚═╝  ╚═╝   ╚═╝
+*/
+
+#ifdef SUPPORT_IMPORT
+void handle_import()
+{
+#ifdef DEBUG_F
+  _Serial.println(__func__);
+#endif
+  //import
+  if (server.hasArg("n"))
+  {
+    String url = "http://" + server.arg("n") + "/f?n=codes.bin";
+
+    //import
+    WiFiClient client;
+    HTTPClient http;
+
+#ifdef DEBUG
+    _Serial.println(url);
+#endif
+
+    File f = LittleFS.open("codes.bin", "a");
+    if (f)
+    {
+      http.begin(client, url);
+      int httpCode = http.GET();
+      if (httpCode == HTTP_CODE_OK)
+      {
+        char buf[512];
+        int len = http.getSize();
+#ifdef DEBUG
+        _Serial.print("File size: ");
+        _Serial.println(len);
+#endif
+
+        while (http.connected() && (len > 0 || len == -1))
+        {
+          int c = client.readBytes(buf, min((size_t)len, sizeof(buf)));
+#ifdef DEBUG
+          _Serial.printf("readBytes: %d\n", c);
+#endif
+          f.write(buf, c);
+          if (len > 0)
+          {
+            len -= c;
+          }
+        }
+      }
+      else
+      {
+#ifdef DEBUG
+        _Serial.printf("http (%d), error: %s\n", httpCode, http.errorToString(httpCode).c_str());
+#endif
+      }
+      f.close();
+    }
+    else
+    {
+#ifdef DEBUG
+      _Serial.println("File error (import)");
+#endif
+    }
+    http.end();
+
+    //limpa e recarrega
+    ir_codes.clear();
+    codes_load();
+
+    send_warning("Códigos importados!");
+  }
+  else
+  {
+#ifdef DEBUG
+    _Serial.println("Sending mDNS query");
+#endif
+    //search for services
+    String s = "<div class='f'>";
+    int n = MDNS.queryService("http", "tcp");
+    int f = 0;
+    for (int i = 0; i < n; ++i)
+    {
+      String sname = MDNS.hostname(i);
+      String sip = MDNS.IP(i).toString();
+#ifdef DEBUG
+      _Serial.print(i + 1);
+      _Serial.print(": ");
+      _Serial.print(sname);
+      _Serial.print(" (");
+      _Serial.print(sip);
+      _Serial.println(")");
+#endif
+      //check WIFIIR service
+      if (sname.startsWith("WIFIIR"))
+      {
+        //remove ".local"
+        sname = sname.substring(0, sname.length() - 6);
+        //build html
+        s += "<div class='b'></div><div class='b'><input type='button' style='background-color:#f8f8f8' disabled value='";
+        s += sname;
+        s += "'></div><div class='b'></div><div class='b'><input type='button' onclick='location.href=\"/q?n=";
+        s += sip;
+        s += "\";' value='Importar' /></div><div class='b'></div>";
+        f++;
+      }
+    }
+    MDNS.removeQuery();
+    if (f)
+    {
+#ifdef DEBUG
+      _Serial.print(n);
+      _Serial.println(" service(s) found");
+#endif
+      s += "</div>";
+      //send html
+      send_html(s.c_str());
+    }
+    else
+    {
+#ifdef DEBUG
+      _Serial.println("no services found");
+#endif
+      send_warning("Nenhum WIFIIR encontrado!");
+    }
+  }
+}
+#endif
+
+/*
 ███████╗███████╗
 ██╔════╝██╔════╝
 █████╗  ███████╗
@@ -556,6 +696,10 @@ void handle_404()
 #ifdef DEBUG_FS
 void handle_files()
 {
+#ifdef DEBUG_F
+  _Serial.println(__func__);
+#endif
+
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   //download
   if (server.hasArg("n"))
@@ -563,8 +707,9 @@ void handle_files()
     String fname = server.arg("n");
     char buf[512];
     int r;
-    server.send(200, "application/octet-stream", "");
     File f = LittleFS.open(fname, "r");
+    server.setContentLength(f.size());
+    server.send(200, "application/octet-stream", "");
     do
     {
       r = f.read((uint8_t *)&buf, sizeof(buf));
@@ -652,7 +797,7 @@ void install_www_handlers()
   _Serial.println(__func__);
 #endif
 
-  //abcdefgHIJklMNOpQrstuvwxyz
+  //abcdefgHIJklMNOpqrstuvwxyz
   //description.xml
   server.on("/", handle_root);
   server.on("/a", handle_add);
@@ -686,5 +831,8 @@ void install_www_handlers()
 #endif
   server.on("/c", handle_info);
   server.on("/v", handle_timeout);
+#ifdef SUPPORT_IMPORT
+  server.on("/q", handle_import);
+#endif
   server.onNotFound(handle_404);
 }

@@ -32,11 +32,13 @@
 
 #define SUPPORT_OTA
 #define SUPPORT_TELEGRAM
-
+#define SUPPORT_IMPORT
 #define SUPPORT_MDNS
 //#define SUPPORT_NETBIOS
 #define SUPPORT_LLMNR
 #define SUPPORT_SSDP
+
+//
 
 #ifndef DEBUG_MALLOC
 #define _malloc malloc
@@ -52,6 +54,11 @@
 #include <WiFiManager.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
+
+#ifdef SUPPORT_IMPORT
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
+#endif
 
 #ifdef SUPPORT_MDNS
 #include <ESP8266mDNS.h>
