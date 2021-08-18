@@ -560,6 +560,63 @@ void handle_404()
 */
 
 #ifdef SUPPORT_IMPORT
+void _download(String url, String filename, bool append)
+{
+#ifdef DEBUG_F
+  _Serial.println(__func__);
+#endif
+  //import
+  WiFiClient client;
+  HTTPClient http;
+
+#ifdef DEBUG
+  _Serial.println(url);
+#endif
+
+  File f = LittleFS.open(filename, append ? "a" : "w");
+  if (f)
+  {
+    http.begin(client, url);
+    int httpCode = http.GET();
+    if (httpCode == HTTP_CODE_OK)
+    {
+      char buf[512];
+      int len = http.getSize();
+#ifdef DEBUG
+      _Serial.print("File size: ");
+      _Serial.println(len);
+#endif
+
+      while (http.connected() && (len > 0 || len == -1))
+      {
+        int c = client.readBytes(buf, min((size_t)len, sizeof(buf)));
+#ifdef DEBUG
+        _Serial.printf("readBytes: %d\n", c);
+#endif
+        f.write(buf, c);
+        if (len > 0)
+        {
+          len -= c;
+        }
+      }
+    }
+    else
+    {
+#ifdef DEBUG
+      _Serial.printf("http (%d), error: %s\n", httpCode, http.errorToString(httpCode).c_str());
+#endif
+    }
+    f.close();
+  }
+  else
+  {
+#ifdef DEBUG
+    _Serial.println("File error");
+#endif
+  }
+  http.end();
+}
+
 void handle_import()
 {
 #ifdef DEBUG_F
@@ -569,57 +626,7 @@ void handle_import()
   if (server.hasArg("n"))
   {
     String url = "http://" + server.arg("n") + "/f?n=codes.bin";
-
-    //import
-    WiFiClient client;
-    HTTPClient http;
-
-#ifdef DEBUG
-    _Serial.println(url);
-#endif
-
-    File f = LittleFS.open("codes.bin", "a");
-    if (f)
-    {
-      http.begin(client, url);
-      int httpCode = http.GET();
-      if (httpCode == HTTP_CODE_OK)
-      {
-        char buf[512];
-        int len = http.getSize();
-#ifdef DEBUG
-        _Serial.print("File size: ");
-        _Serial.println(len);
-#endif
-
-        while (http.connected() && (len > 0 || len == -1))
-        {
-          int c = client.readBytes(buf, min((size_t)len, sizeof(buf)));
-#ifdef DEBUG
-          _Serial.printf("readBytes: %d\n", c);
-#endif
-          f.write(buf, c);
-          if (len > 0)
-          {
-            len -= c;
-          }
-        }
-      }
-      else
-      {
-#ifdef DEBUG
-        _Serial.printf("http (%d), error: %s\n", httpCode, http.errorToString(httpCode).c_str());
-#endif
-      }
-      f.close();
-    }
-    else
-    {
-#ifdef DEBUG
-      _Serial.println("File error (import)");
-#endif
-    }
-    http.end();
+    _download(url, "codes.bin", true);
 
     //limpa e recarrega
     ir_codes.clear();
@@ -635,7 +642,7 @@ void handle_import()
     //search for services
     String s = "<div class='f'>";
     int n = MDNS.queryService("http", "tcp");
-    int f = 0;
+    int c = 0;
     for (int i = 0; i < n; ++i)
     {
       String sname = MDNS.hostname(i);
@@ -659,11 +666,11 @@ void handle_import()
         s += "'></div><div class='b'></div><div class='b'><input type='button' onclick='location.href=\"/q?n=";
         s += sip;
         s += "\";' value='Importar' /></div><div class='b'></div>";
-        f++;
+        c++;
       }
     }
     MDNS.removeQuery();
-    if (f)
+    if (c)
     {
 #ifdef DEBUG
       _Serial.print(n);
@@ -685,12 +692,12 @@ void handle_import()
 #endif
 
 /*
-███████╗███████╗
-██╔════╝██╔════╝
-█████╗  ███████╗
-██╔══╝  ╚════██║
-██║     ███████║
-╚═╝     ╚══════╝
+███████╗██╗██╗     ███████╗    ███████╗███████╗██████╗ ██╗   ██╗███████╗██████╗
+██╔════╝██║██║     ██╔════╝    ██╔════╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗
+█████╗  ██║██║     █████╗      ███████╗█████╗  ██████╔╝██║   ██║█████╗  ██████╔╝
+██╔══╝  ██║██║     ██╔══╝      ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗
+██║     ██║███████╗███████╗    ███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║
+╚═╝     ╚═╝╚══════╝╚══════╝    ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝
 */
 
 #ifdef DEBUG_FS

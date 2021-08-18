@@ -27,7 +27,7 @@
 //#define DEBUG_GENRNDBTN 4
 //#define DEBUG_GENRNDUSR 8
 //#define DEBUG_ESP
-#define DEBUG_FS
+//#define DEBUG_FS
 //#define DEBUG_SERIAL2FILE
 
 #define SUPPORT_OTA
@@ -38,7 +38,10 @@
 #define SUPPORT_LLMNR
 #define SUPPORT_SSDP
 
-//
+//SUPPORT_IMPORT precisa FS server
+#ifdef SUPPORT_IMPORT
+#define DEBUG_FS
+#endif
 
 #ifndef DEBUG_MALLOC
 #define _malloc malloc
