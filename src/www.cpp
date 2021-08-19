@@ -165,48 +165,61 @@ void send_warning(const char *txt, int timeout = 500)
 ╚═╝  ╚═╝╚═════╝ ╚═════╝
 */
 
-void handle_add()
+void handle_add_timeout()
 {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(1024);
-  sprintf_P(r, PSTR("%s%s\
-<script>window.onbeforeunload=function(){a=new XMLHttpRequest();a.open('GET', \"/v\", true);a.send();};\
-setInterval(function(){document.location.href=\"/\";},120000);</script>\
-<form action='/s' method='POST'>\
-<p>1. Entre o nome do botão que você quer adicionar</p>\
-<input type='text' name='b' maxlength='31' value='%s'>\
-<p>2. Espere a luz do WIFIIR começar a piscar</p>\
-<p>3. Aperte o botão no controle até a luz desligar</p>\
-<p>4. Clique em ADICIONAR abaixo</p>\
-<input type='submit' value='Adicionar'>\
-</form>"),
-            server.hasArg("e") ? "<div class='x card error'><p class='x'>Preencha o nome do botão</p></div>" : "",
-            server.hasArg("n") ? "<div class='x card error'><p class='x'>Erro na leitura do botão</p></div>" : "",
-            server.hasArg("b") ? server.arg("b").c_str() : "");
-  send_html(r);
-  free(r);
-  //inicia leitor de IR
-  decoding_onoff = true;
+  _end_ir();
+  server.send(200, "text/txt", "OK");
 }
 
-void handle_add2()
+void handle_add_ir_status()
+{
+#ifdef DEBUG_F
+  _Serial.println(__func__);
+#endif
+  server.send(200, "text/txt", decoding_onoff ? "ON" : "OFF");
+}
+
+void handle_add()
 {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
   String button = server.hasArg("b") ? server.arg("b") : "";
   button.trim();
-  //clicou add sem ter nome/codigo (ou passou muito tempo)
-  if ((decoding_onoff) || (irin_timeout) || (button.isEmpty()))
+  if (button.isEmpty() || waiting_ir)
   {
-    //redirect to /add with "button" as param
-    char *r = (char *)_malloc(512);
-    sprintf(r, "<script>document.location.href = '/a%s%s%s'</script>",
-            button.isEmpty() ? "?e=1" : "?b=",
-            button.isEmpty() ? "" : button.c_str(),
-            (decoding_onoff || irin_timeout) ? "&n=1" : "");
+    char *r = (char *)_malloc(3072);
+    sprintf_P(r, PSTR("\
+<script>\
+window.onbeforeunload=()=>{fetch('/v');};\
+setTimeout(()=>{document.location.href='/';},6e4);\
+a=setInterval(()=>{fetch('/h').then(b=>b.text()).then((r)=>{if(r==='OFF'){clearInterval(a);document.getElementById('a').style.display='none';document.getElementById('b').style.display='block';}})},1e3);\
+</script>\
+<form class='f' action='/a' method='POST'>\
+<div class='a'></div>\
+<div class='c' id='c'>Pressione um botão no controle remoto</div>\
+<div class='b'>\
+<img id='a' src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC0ElEQVQ4jaWTXUhTcRjGXwXJKAnSoJLEKIskK/qgbNmas1MiFhUEQXUV3QR2EQTnsC/2h7xxN8kCEeoikLyIbgRDbYdzcAkpFZlfc003T03LcGxHzv7ruKcLza/oqvf6/zy8z//9PUTrhnkcgtct+phL6mNOMcGcYoK5pD6vW/Qxj0NY/355Gj2eUuaSmlqfNMeDqmxqsSjShoG0YUCLRRFUZbPV3xxnLqmp0eMp/VvslJ6rco/OOUc2mYQhy/h+7x5mGhowryhYSKXAOYcq9+jMKT1fY8JcUpMq9+jZTAb606fQKisxabEgcvYswufOYby6GqGaGvxsa0M2k1k0cUlNy5lb/c1xzjn0Z88wZbFgoqoKYasVoSXhmCBgrLYWobo6/Gx/Ac45WvzNceZxCOR1i76gKpvZVApaVRUmrFaEbbZVwosI1dchfLUeX65fRuTGFSzM6wiqsul1iz5iLqlPi0VhKAombTaE7XaEBAGjdjuGThzF0KF9+Ly7EMP7ijB6oAjjp8ug9wagxaJgLqmPmFNMpA0DMw8eIHL+PEJ2Oz4WF2MgPw8fNhMGiwjDOwmjpYTQHkJoL2Hqpg1pwwBziollg+mHDzFSUYGBvDz05xI+bCIMbiOMlBDGywiRg4SJIzmYPJqL6bvVqwyWIiQ7OzFAhHdEeJ9PGCwkjOwihPcTJo/kYOrURny1FuJb9XYYasdKBK9b9AWVgGnOzaGfCP25hI8FhKEdi+tOHM6BZinA9IVS/Lhcgdlrx5DVk+hVA0uf6HEILf7Hcc45vjGGgTzCp62Lq38pJ8RObsC0UILZa8eRuC2Ad7SvPeMfkJRAl57lacQfMQwWEcZ2EyIVBO3MFnyvL0filh2ZzleA+QuK3L0C0mqUlTddOuccZmIOqdcvEb9jw+z9S+Bve5Cd15dQ7v4b5dVlavE/jvcqAVOLri9TwGz5V5n+p86/ASI1RYwN7jT9AAAAAElFTkSuQmCC' />\
+<img id='b' style='display:none' src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACpElEQVQ4jaVTzU8TcRCdUgoCEg6gxuiBi3jyoJ4MQWzZbkEkhH8CREQL8pFd2KX2h2C0EENpm2oKhkaiB4weDGLAdqUNF70YTFAPhsK9qyW0P8A+DxXkIx6Mc573Zt7Me0T7ijl6RWefNMRUeYEpks4USWeqvODsk4aYo1fc379Tgw5HKVNll9/rXo1GNL4SW0YqmUQqmcRKbBnRiMb9XvcqU2XXoMNRehCsyEEtPKdzzpHgP/AuFkLbTAvap29g/puGBE+Acw4tPKczRQ7uIWGq7NLCc/pWejM9sTgGc/ACzGPlsDy6CMF/CVafBTafgMkPk9hKb6W18JzOVNm1o9nvda9yzhH8NA7LRDmqAhUQ/JUQfBaIHgE2j4jLnhpc8dbi2fun4JzD73WvMkevSM4+aSga0XhiIwEhWAEhUAmr3wzRK8A2KqJmtBq1o7Wo89Sh3luPBl8D1vgaohGNO/ukIWKqvLASW0YkpkEcN8P2sAo2nwhhpArnB86hTClDcXsxjnSU4GhXCU7fPoXQl7dYiS2DqfICMUXSU8kkut/cQk3ACqu3Cid7TsDUYgI1EgxXCVmtBGMbIbuDkN1JEHxmpJJJMEXSdwjkmS6cdZ1B7k0TDM2UATcTjHaCqZOQIxNyFUKuShDHdxP8ljDzeRpGO8FwjUBNmclGO8HUnQHmMUL+ACH/LuHF0tQfCdtHjK/HkdWaAVIjIet6ZnKuQsjrJxTcJxQ+MKDIbYSeiiM6v33EXW/sf81ATZkNjHZCjkQ45CQU3CMUuY04/rgII4vDe9+4baRwaFbf+LmRZq8YDM2E7HZCTg8h7w7h8DDh2FghPEsj2Exv7jXSbiuHQ7M65xzx9Tief5yCGDCj+okZL79O4TvX/27lA2Ga/8cw/U+cfwHJ3xo5pMYXyQAAAABJRU5ErkJggg==' />\
+</div>\
+<div class='a'></div>\
+<div class='a'></div>\
+<div class='c'>\
+<input type='text' name='b' maxlength='31' value='%s'>\
+</div>\
+<div class='b'>\
+<input type='submit' value='Adicionar'>\
+</div>\
+<div class='a'></div>\
+</form>\
+"),
+              button);
+    //inicia leitor de IR (antes de mandar a pagina)
+    decoding_onoff = true;
+    //send
     send_html(r);
     free(r);
   }
@@ -221,6 +234,15 @@ void handle_add2()
   }
 }
 
+/*
+███████╗███████╗███╗   ██╗██████╗
+██╔════╝██╔════╝████╗  ██║██╔══██╗
+███████╗█████╗  ██╔██╗ ██║██║  ██║
+╚════██║██╔══╝  ██║╚██╗██║██║  ██║
+███████║███████╗██║ ╚████║██████╔╝
+╚══════╝╚══════╝╚═╝  ╚═══╝╚═════╝
+*/
+
 void handle_press()
 {
 #ifdef DEBUG_F
@@ -229,6 +251,15 @@ void handle_press()
   ir_send(atoi(server.arg("b").c_str()));
   send_warning("Botão enviado");
 }
+
+/*
+███████╗██████╗ ██╗████████╗
+██╔════╝██╔══██╗██║╚══██╔══╝
+█████╗  ██║  ██║██║   ██║
+██╔══╝  ██║  ██║██║   ██║
+███████╗██████╔╝██║   ██║
+╚══════╝╚═════╝ ╚═╝   ╚═╝
+*/
 
 void handle_edit()
 {
@@ -262,6 +293,15 @@ void handle_edit()
     free(r);
   }
 }
+
+/*
+███╗   ███╗ ██████╗ ██╗   ██╗███████╗
+████╗ ████║██╔═══██╗██║   ██║██╔════╝
+██╔████╔██║██║   ██║██║   ██║█████╗
+██║╚██╔╝██║██║   ██║╚██╗ ██╔╝██╔══╝
+██║ ╚═╝ ██║╚██████╔╝ ╚████╔╝ ███████╗
+╚═╝     ╚═╝ ╚═════╝   ╚═══╝  ╚══════╝
+*/
 
 void move_button(int button, int offset)
 {
@@ -314,6 +354,15 @@ void handle_down()
   }
   _main_with_index(button);
 }
+
+/*
+██████╗ ███████╗██╗     ███████╗████████╗███████╗
+██╔══██╗██╔════╝██║     ██╔════╝╚══██╔══╝██╔════╝
+██║  ██║█████╗  ██║     █████╗     ██║   █████╗
+██║  ██║██╔══╝  ██║     ██╔══╝     ██║   ██╔══╝
+██████╔╝███████╗███████╗███████╗   ██║   ███████╗
+╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚══════╝
+*/
 
 void handle_del()
 {
@@ -542,6 +591,15 @@ void handle_reboot()
   reboot();
 }
 
+/*
+██╗  ██╗ ██████╗ ██╗  ██╗
+██║  ██║██╔═████╗██║  ██║
+███████║██║██╔██║███████║
+╚════██║████╔╝██║╚════██║
+     ██║╚██████╔╝     ██║
+     ╚═╝ ╚═════╝      ╚═╝
+*/
+
 void handle_404()
 {
 #ifdef DEBUG_F
@@ -757,6 +815,15 @@ void handle_files()
 }
 #endif
 
+/*
+██╗███╗   ██╗███████╗ ██████╗
+██║████╗  ██║██╔════╝██╔═══██╗
+██║██╔██╗ ██║█████╗  ██║   ██║
+██║██║╚██╗██║██╔══╝  ██║   ██║
+██║██║ ╚████║██║     ╚██████╔╝
+╚═╝╚═╝  ╚═══╝╚═╝      ╚═════╝
+*/
+
 void handle_info()
 {
 #ifdef DEBUG_F
@@ -780,15 +847,6 @@ maxOpenFiles: %d\nmaxPathLength: %d\n\n"),
   free(buf);
 }
 
-void handle_timeout()
-{
-#ifdef DEBUG_F
-  _Serial.println(__func__);
-#endif
-  _end_ir();
-  server.send(200, "text/txt", "OK");
-}
-
 /*
 ██╗███╗   ██╗███████╗████████╗ █████╗ ██╗     ██╗
 ██║████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║     ██║
@@ -804,42 +862,50 @@ void install_www_handlers()
   _Serial.println(__func__);
 #endif
 
-  //abcdefgHIJklMNOpqrstuvwxyz
+  //abcdefghIJklMNOpqrStuvwxyz
   //description.xml
   server.on("/", handle_root);
+  {
+    server.on("/p", handle_press);
+    server.on("/e", handle_edit);
+    server.on("/u", handle_up);
+    server.on("/d", handle_down);
+    server.on("/t", handle_del);
+  }
   server.on("/a", handle_add);
-  server.on("/p", handle_press);
-  server.on("/e", handle_edit);
-  server.on("/u", handle_up);
-  server.on("/d", handle_down);
-  server.on("/t", handle_del);
-#ifdef DEBUG_GENRNDBTN
-  server.on("/y", handle_randombtn);
-#endif
-#ifdef SUPPORT_TELEGRAM
-  server.on("/k", handle_token);
-  server.on("/x", handle_userman);
-#ifdef DEBUG_GENRNDUSR
-  server.on("/z", handle_randomusr);
-#endif
-#endif
-  server.on("/s", handle_add2);
-  server.on("/b", handle_reboot);
-  server.on("/r", handle_reset);
+  {
+    server.on("/v", handle_add_timeout);
+    server.on("/h", handle_add_ir_status);
+  }
   server.on("/g", handle_config);
-  server.on("/l", handle_clear);
-  server.on("/w", handle_name);
+  {
+    server.on("/w", handle_name);
+    server.on("/b", handle_reboot);
+    server.on("/r", handle_reset);
+    server.on("/l", handle_clear);
+#ifdef DEBUG_GENRNDBTN
+    server.on("/y", handle_randombtn);
+#endif
+#ifdef SUPPORT_IMPORT
+    server.on("/q", handle_import);
+#endif
+    {
+#ifdef SUPPORT_TELEGRAM
+      server.on("/k", handle_token);
+      server.on("/x", handle_userman);
+#ifdef DEBUG_GENRNDUSR
+      server.on("/z", handle_randomusr);
+#endif
+    }
+#endif
+#ifdef DEBUG_FS
+    server.on("/f", handle_files);
+#endif
+  }
 #ifdef SUPPORT_SSDP
   server.on("/description.xml", HTTP_GET, []()
             { SSDP_esp8266.schema(server.client()); });
 #endif
-#ifdef DEBUG_FS
-  server.on("/f", handle_files);
-#endif
   server.on("/c", handle_info);
-  server.on("/v", handle_timeout);
-#ifdef SUPPORT_IMPORT
-  server.on("/q", handle_import);
-#endif
   server.onNotFound(handle_404);
 }

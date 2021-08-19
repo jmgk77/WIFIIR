@@ -21,8 +21,11 @@ const uint16_t kRecvPin = IR_RECV_PIN;
 const uint16_t kCaptureBufferSize = 1024;
 const uint8_t kTimeout = 50;
 IRrecv irrecv(kRecvPin, kCaptureBufferSize, kTimeout, false);
+
 bool irin_enable;
-bool irin_timeout;
+bool decoding_onoff;
+bool waiting_ir;
+bool toggle;
 
 //
 CODES irresult;
@@ -34,9 +37,6 @@ ESP8266WebServer server;
 #ifdef SUPPORT_OTA
 ESP8266HTTPUpdateServer httpUpdater;
 #endif
-
-bool decoding_onoff;
-bool toggle;
 
 //led blink vars
 #define LED_BLINK_INTERVAL 300
@@ -218,7 +218,7 @@ void setup()
   irsend.begin();
 
   //blinking LED setup
-  irin_timeout = irin_enable = decoding_onoff = false;
+  irin_enable = decoding_onoff = false;
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
   ITimer.attachInterruptInterval(LED_BLINK_INTERVAL * 1000, blink_led);
@@ -258,7 +258,7 @@ void loop()
     {
       irrecv.enableIRIn();
       irin_enable = true;
-      irin_timeout = false;
+      waiting_ir = true;
     }
 
     //esperando resultado...
@@ -268,6 +268,7 @@ void loop()
       dump_ir(irresult);
 #endif
       //captura feita
+      waiting_ir = false;
       _end_ir();
     }
   }

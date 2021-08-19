@@ -17,7 +17,7 @@ extern IRsend irsend;
 extern WiFiManager wm;
 
 extern bool decoding_onoff;
-extern bool irin_timeout;
+extern bool waiting_ir;
 extern void _end_ir();
 
 extern std::vector<CODES> ir_codes;
