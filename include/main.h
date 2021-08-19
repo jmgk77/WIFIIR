@@ -31,12 +31,13 @@
 //#define DEBUG_SERIAL2FILE
 
 #define SUPPORT_OTA
-#define SUPPORT_TELEGRAM
-#define SUPPORT_IMPORT
-#define SUPPORT_MDNS
+//#define SUPPORT_TELEGRAM
+//#define SUPPORT_IMPORT
+//#define SUPPORT_MDNS
 //#define SUPPORT_NETBIOS
-#define SUPPORT_LLMNR
-#define SUPPORT_SSDP
+//#define SUPPORT_LLMNR
+//#define SUPPORT_SSDP
+#define SUPPORT_ALEXA
 
 //SUPPORT_IMPORT precisa FS server
 #ifdef SUPPORT_IMPORT
@@ -89,6 +90,11 @@
 #define TIMER_INTERRUPT_DEBUG 0
 #define _TIMERINTERRUPT_LOGLEVEL_ 0
 #include <ESP8266TimerInterrupt.h>
+
+#ifdef SUPPORT_ALEXA
+#define ESPALEXA_DEBUG
+#include <Espalexa.h>
+#endif
 
 typedef enum
 {

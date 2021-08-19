@@ -49,6 +49,28 @@ String wifiir_subname;
 String boot_time;
 
 /*
+ █████╗ ██╗     ███████╗██╗  ██╗ █████╗
+██╔══██╗██║     ██╔════╝╚██╗██╔╝██╔══██╗
+███████║██║     █████╗   ╚███╔╝ ███████║
+██╔══██║██║     ██╔══╝   ██╔██╗ ██╔══██║
+██║  ██║███████╗███████╗██╔╝ ██╗██║  ██║
+╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝
+*/
+
+#ifdef SUPPORT_ALEXA
+
+Espalexa espalexa;
+
+void alexa_send(uint8_t button)
+{
+#ifdef DEBUG
+  _Serial.println("Alexa" + button);
+#endif
+  ir_send(button);
+}
+#endif
+
+/*
 ███████╗███████╗████████╗██╗   ██╗██████╗
 ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗
 ███████╗█████╗     ██║   ██║   ██║██████╔╝
@@ -137,7 +159,12 @@ void setup()
 
   install_www_handlers();
 
+#ifdef SUPPORT_ALEXA
+  espalexa.addDevice("Button", alexa_send);
+  espalexa.begin(&server);
+#else
   server.begin();
+#endif
 
 #ifdef DEBUG_ESP
   dump_fs();
@@ -242,7 +269,12 @@ void _end_ir()
 
 void loop()
 {
+#ifdef SUPPORT_ALEXA
+  espalexa.loop();
+#else
   server.handleClient();
+#endif
+
 #ifdef SUPPORT_MDNS
   MDNS.update();
 #endif

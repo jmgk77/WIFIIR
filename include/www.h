@@ -20,6 +20,10 @@ extern bool decoding_onoff;
 extern bool waiting_ir;
 extern void _end_ir();
 
+#ifdef SUPPORT_ALEXA
+extern Espalexa espalexa;
+#endif
+
 extern std::vector<CODES> ir_codes;
 
 extern String boot_time;
