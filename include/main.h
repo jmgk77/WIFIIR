@@ -13,32 +13,30 @@
 #error This code is designed to run on ESP8266 and ESP8266-based boards! Please check your Tools->Board setting.
 #endif
 
-#define WIFIIR_VERSION __DATE__, __TIME__
-
 #define LED_PIN D5
 #define IR_LED_PIN D2
 #define IR_RECV_PIN D7
 
 #define DEBUG
-//#define DEBUG_SEND
-//#define DEBUG_MALLOC
-//#define DEBUG_F
-//#define DEBUG_CODES
-//#define DEBUG_GENRNDBTN 4
-//#define DEBUG_GENRNDUSR 8
-//#define DEBUG_ESP
-//#define DEBUG_FS
-//#define DEBUG_SERIAL2FILE
+// #define DEBUG_SEND
+// #define DEBUG_MALLOC
+// #define DEBUG_F
+// #define DEBUG_CODES
+// #define DEBUG_GENRNDBTN 4
+// #define DEBUG_GENRNDUSR 8
+// #define DEBUG_ESP
+// #define DEBUG_FS
+// #define DEBUG_SERIAL2FILE
 
 #define SUPPORT_OTA
 #define SUPPORT_TELEGRAM
 #define SUPPORT_IMPORT
 #define SUPPORT_MDNS
-//#define SUPPORT_NETBIOS
+// #define SUPPORT_NETBIOS
 #define SUPPORT_LLMNR
 #define SUPPORT_SSDP
 
-//SUPPORT_IMPORT precisa FS server
+//
 #ifdef SUPPORT_IMPORT
 #define DEBUG_FS
 #endif
@@ -63,7 +61,7 @@
 #include <WiFiClient.h>
 #endif
 
-#ifdef SUPPORT_MDNS
+#if defined(SUPPORT_MDNS) || defined(SUPPORT_IMPORT)
 #include <ESP8266mDNS.h>
 #endif
 #ifdef SUPPORT_NETBIOS

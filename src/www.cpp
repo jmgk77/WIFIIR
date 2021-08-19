@@ -492,17 +492,6 @@ void handle_token()
   send_warning("Token Salvo!");
 }
 
-void handle_name()
-{
-#ifdef DEBUG_F
-  _Serial.println(__func__);
-#endif
-  wifiir_subname = server.hasArg("n") ? server.arg("n") : "";
-  wifiir_subname.trim();
-  wifiir_name_save();
-  send_warning("Nome Salvo!");
-}
-
 void handle_userman()
 {
 #ifdef DEBUG_F
@@ -551,6 +540,17 @@ void handle_userman()
   }
 }
 #endif
+
+void handle_name()
+{
+#ifdef DEBUG_F
+  _Serial.println(__func__);
+#endif
+  wifiir_subname = server.hasArg("n") ? server.arg("n") : "";
+  wifiir_subname.trim();
+  wifiir_name_save();
+  send_warning("Nome Salvo!");
+}
 
 void handle_clear()
 {
@@ -647,7 +647,7 @@ void _download(String url, String filename, bool append)
 
       while (http.connected() && (len > 0 || len == -1))
       {
-        int c = client.readBytes(buf, min((size_t)len, sizeof(buf)));
+        int c = client.readBytes(buf, min((int)len, (int)sizeof(buf)));
 #ifdef DEBUG
         _Serial.printf("readBytes: %d\n", c);
 #endif
@@ -896,8 +896,8 @@ void install_www_handlers()
 #ifdef DEBUG_GENRNDUSR
       server.on("/z", handle_randomusr);
 #endif
-    }
 #endif
+    }
 #ifdef DEBUG_FS
     server.on("/f", handle_files);
 #endif

@@ -31,12 +31,26 @@ public:
     {
         Serial.setDebugOutput(x);
     }
+    void print(uint64_t x)
+    {
+        _start();
+        f.print(x);
+        _end();
+        Serial.print(x);
+    }
     void print(const char *t)
     {
         _start();
         f.print(t);
         _end();
         Serial.print(t);
+    }
+    void print(String s)
+    {
+        _start();
+        f.print(s);
+        _end();
+        Serial.print(s);
     }
     void println(uint64_t x)
     {
@@ -52,12 +66,12 @@ public:
         _end();
         Serial.println(t);
     }
-    void println(String t)
+    void println(String s)
     {
         _start();
-        f.println(t.c_str());
+        f.println(s);
         _end();
-        Serial.println(t.c_str());
+        Serial.println(s);
     }
     void println()
     {
