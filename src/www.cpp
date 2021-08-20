@@ -63,7 +63,7 @@ text-align:center}\
 ";
 
 const char html_footer[] PROGMEM = "\
-<footer class='sticky'><label for='drawer-control' class='drawer-toggle'></label>\
+</div></div><footer class='sticky'><label for='drawer-control' class='drawer-toggle'></label>\
 <input type='checkbox' id='drawer-control' class='drawer'>\
 <nav><label for='drawer-control' class='drawer-close'></label>\
 <a class='doc' href='/'>Controle</a><br>\
@@ -79,7 +79,7 @@ void send_html(const char *h)
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.send_P(200, "text/html", html_header);
   String s = "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
-  server.sendContent("<div class='x card'><p class='x'>" + s + "</p></div><br>");
+  server.sendContent("<div class='x card'><p class='x'>" + s + "</p></div><br><div class='col-sm-12'><div class='card fluid'>");
   server.sendContent(h);
   server.sendContent_P(html_footer);
 #ifdef DEBUG_SEND
@@ -389,7 +389,7 @@ void handle_config()
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc(218 + 32 + 517 + 170 + 454 + 64 + 185 + 172 + 172 + 265 + 28 + 20 + 61);
+  char *r = (char *)_malloc((((218 + 32 + 517 + 170 + 454 + 64 + 185 + 172 + 172 + 265 + 28 + 20 + 61) + 15) >> 2) << 2);
   sprintf_P(r, PSTR("\
 <form class='f' action='/w' method='POST'><div class='b'>Device name</div>\
 <div class='c'><input type='text' name='n' maxlength='31' value='%s'/></div>\
