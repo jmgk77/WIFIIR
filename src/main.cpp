@@ -22,10 +22,12 @@ const uint16_t kCaptureBufferSize = 1024;
 const uint8_t kTimeout = 50;
 IRrecv irrecv(kRecvPin, kCaptureBufferSize, kTimeout, false);
 
-bool irin_enable;
+bool ir_rf_enable;
 bool decoding_onoff;
-bool waiting_ir;
+bool waiting_ir_rf;
 bool toggle;
+
+RCSwitch rf = RCSwitch();
 
 //
 CODES irresult;
@@ -216,9 +218,10 @@ void setup()
 #endif
 
   irsend.begin();
+  rf.enableTransmit(RF_TX);
 
   //blinking LED setup
-  irin_enable = decoding_onoff = false;
+  ir_rf_enable = decoding_onoff = false;
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
   ITimer.attachInterruptInterval(LED_BLINK_INTERVAL * 1000, blink_led);
@@ -236,7 +239,8 @@ void setup()
 void _end_ir()
 {
   irrecv.disableIRIn();
-  irin_enable = decoding_onoff = false;
+  rf.disableReceive();
+  ir_rf_enable = decoding_onoff = false;
   digitalWrite(LED_PIN, LOW);
 }
 
@@ -253,22 +257,42 @@ void loop()
   //lendo codigo?
   if (decoding_onoff)
   {
-    //habilita leitor
-    if (!irin_enable)
+    //habilita leitores
+    if (!ir_rf_enable)
     {
       irrecv.enableIRIn();
-      irin_enable = true;
-      waiting_ir = true;
+      rf.enableReceive(RF_RX);
+      ir_rf_enable = true;
+      waiting_ir_rf = true;
     }
 
     //esperando resultado...
+
+    //IR
     if (irrecv.decode(&irresult.results))
     {
+      irresult.type = IR_CODE;
 #ifdef DEBUG
       dump_ir(irresult);
 #endif
       //captura feita
-      waiting_ir = false;
+      waiting_ir_rf = false;
+      _end_ir();
+    }
+
+    //RF
+    if (rf.available())
+    {
+      irresult.type = RF_CODE;
+      irresult.rfcode.code = rf.getReceivedValue();
+      irresult.rfcode.length = rf.getReceivedBitlength();
+      irresult.rfcode.delay = rf.getReceivedDelay();
+      irresult.rfcode.protocol = rf.getReceivedProtocol();
+#ifdef DEBUG
+      dump_rf(irresult);
+#endif
+      //captura feita
+      waiting_ir_rf = false;
       _end_ir();
     }
   }

@@ -13,4 +13,4 @@
 
 extern std::vector<CODES> ir_codes;
 
-void ir_send(int button);
+void ir_rf_send(int button);

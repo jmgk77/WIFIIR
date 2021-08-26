@@ -62,10 +62,10 @@ void codes_save()
     for (auto i = ir_codes.cbegin(); i != ir_codes.cend(); ++i)
     {
 #ifdef DEBUG_CODES
-      _Serial.printf(resultToHumanReadableBasic(&(*i).results).c_str());
-      _hexdump((void *)(*i).name, sizeof(CODES));
+      _Serial.printf(resultToHumanReadableBasic(&i->results).c_str());
+      _hexdump((void *)i->name, sizeof(CODES));
 #endif
-      f.write(&(*i)._start, sizeof(CODES));
+      f.write(&i->_start, sizeof(CODES));
     }
     f.close();
   }
@@ -181,12 +181,12 @@ void telegram_users_save()
     for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i)
     {
 #ifdef DEBUG
-      _Serial.printf("BT_SAVE: %d\t%d\t%s\n", (*i).auth, (*i).id, (*i).name);
+      _Serial.printf("BT_SAVE: %d\t%d\t%s\n", i->auth, i->id, i->name);
 #endif
-      if ((*i).auth)
+      if (i->auth)
       {
         //so salva usuarios autorizados
-        f.write(&(*i)._start, sizeof(TUSERS));
+        f.write(&i->_start, sizeof(TUSERS));
       }
     }
     f.close();

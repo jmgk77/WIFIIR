@@ -21,6 +21,10 @@ const char html_header[] PROGMEM = "\
 background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQflBxMQGDNbPF7PAAAA7klEQVQoz5XRPUuCAQDE8d+jUgRGWImbNFj2EEEIDS1NCdHiEkV9nfCrFEWLSwQ1tTi0BCFPL0u0iWEEQihqTVKUFd12x3+5O/5Q8MUl0PX2HUhaEJo2go4nkZrWABi1ZlnDtUctJGUtSrt0rh3I2vGsoi5txiSaHjRklKQcBPacuRBal1TXxKSMllORVcXAlBeb5py40jOGV3FLNtw5NhFg1oojI4ry4ui5daZjS9V9gJi+ebtqqhpIW7Fg342Y/qBuQR7k5EBeYdhQ20JEDoevmlI2Lqks9REmPgFtXSG62j99ESqhIvrtvMD/9A6R0TwXv22H+QAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMS0wNy0xOVQxNjoyNDoyNSswMDowMHcnQy4AAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjEtMDctMTlUMTY6MjQ6MjUrMDA6MDAGevuSAAAAAElFTkSuQmCC);\
 background-repeat:no-repeat;\
 background-color:#f8f8f8}\
+.r,.r:focus,.r:hover{\
+background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdwAAAHcBnDzE7AAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAEeSURBVDiN3dC9K8VxFAbwz/1RSF4m2ZAswiwi3Elh8A8Y/AdWVrH7M9gMDN7Ky0aK7oYrXSFyC9lkcH4S18vsmb7fc57nnOc8vKEcc8j4HRnMh+YdU2hHLbp+EHeiBh2hkaAKDchhBlffOMlEbxrHaERlgkGsoAUXuMVsiQGzuMMlmrCKgTKMYxnD2EIbirjBAsawjYqwn0NvcIfLUY0n1OE+MjiJe9fDegfO0Ywz1OMRNUlsakAerThAP3bQHYP20If94OQjg+sEuxjABkZxigJe4rS1eBdCOILNyG47wSF68BCEXiyVCHExePngduMobWYxEe+qD6Ishj78095kWk+isB6hZPBcYnuK5+AU4+Rf8dnBFyQ/Nf+CfzDgFeWoP7q6Y+MdAAAAAElFTkSuQmCC);\
+background-repeat:no-repeat;\
+background-color:#f8f8f8}\
 .e,.e:focus,.e:hover{\
 background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAYQAAAGEBVSuQvQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAEKSURBVDiNldO9SgNBFAXgL0uw8AcUC5uAiKmshICdYOMjiNhaSCIWgr0voIW9T6CgjW1A8Aks7URQtBBBhARE1GImsI4TFw8sd4d775mzezg1AStYRM9PLOMCp4agHusCjjL9Ao9Yx0mOoIj1a8gFPVzjHht/KRiGc2zjFUt4x1lusFNBNEC7SkEDM5nFW7zkGFOCcUxl5p5iraWNIjk30MIz5nCJLh5yt+cUdOND+Ps5zOJN/KRUQRXmsSU4M/1fgqZg5x2usFNuVtnYxG58H8MxRssDbXn7csv75eWBLXWsYSKeR+JwH5tCqD6xh0Ol0P3yNUELk0JaP3AgSWxVFlajihshF/104BuZGSzACO/S3wAAAABJRU5ErkJggg==);\
 background-repeat:no-repeat;\
@@ -113,18 +117,21 @@ void handle_root()
 
   //table
   strcpy(r, "<div class='f'>");
+  char t[2] = {0, 0};
   for (auto i = ir_codes.cbegin() + index; (i != ir_codes.cend()) && (c < (index + 10)); ++i, c++)
   {
+    t[0] = (i->type == IR_CODE) ? 'w' : 'r';
+
     sprintf_P(r + strlen(r), PSTR("\
 <div class='a'></div>\
 <div class='h'>%s</div>\
-<div class='a'><input type='button' class='w' onclick='window.location.href=\"/p?b=%d\";'/></div>\
+<div class='a'><input type='button' class='%s' onclick='window.location.href=\"/p?b=%d\";'/></div>\
 <div class='a'><input type='button' class='e' onclick='window.location.href=\"/e?b=%d\";'/></div>\
 <div class='a'><input type='button' class='u' onclick='window.location.href=\"/u?b=%d\";'/></div>\
 <div class='a'><input type='button' class='d' onclick='window.location.href=\"/d?b=%d\";'/></div>\
 <div class='a'><input type='button' class='t' onclick='window.location.href=\"/t?b=%d\";'/></div>\
 "),
-              i->name, c, c, c, c, c);
+              i->name, t, c, c, c, c, c);
   }
 
   //nav
@@ -189,7 +196,7 @@ void handle_add()
 #endif
   String button = server.hasArg("b") ? server.arg("b") : "";
   button.trim();
-  if (button.isEmpty() || waiting_ir)
+  if (button.isEmpty() || waiting_ir_rf)
   {
     char *r = (char *)_malloc(3072);
     sprintf_P(r, PSTR("\
@@ -226,7 +233,6 @@ a=setInterval(()=>{fetch('/h').then(b=>b.text()).then((r)=>{if(r==='OFF'){clearI
   else
   {
     //save button info
-    irresult.type = IR_CODE;
     strncpy(irresult.name, button.c_str(), sizeof(irresult.name) - 1);
     ir_codes.push_back(irresult);
     codes_save();
@@ -248,7 +254,7 @@ void handle_press()
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  ir_send(atoi(server.arg("b").c_str()));
+  ir_rf_send(atoi(server.arg("b").c_str()));
   send_warning("Botão enviado");
 }
 
@@ -310,7 +316,7 @@ void move_button(int button, int offset)
 #endif
   CODES tmp;
   auto i = ir_codes.begin() + button;
-  memcpy(&tmp, &(*i), sizeof(CODES));
+  memcpy(&tmp, &i->_start, sizeof(CODES));
   ir_codes.erase(i);
   ir_codes.insert(ir_codes.begin() + button + offset, tmp);
   codes_save();

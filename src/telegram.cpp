@@ -54,7 +54,7 @@ void tb_kbd()
         for (auto i = ir_codes.cbegin(); i != ir_codes.cend(); ++i)
         {
             itoa(c, n, 10);
-            tkbd.addButton((*i).name, n, CTBotKeyboardButtonQuery);
+            tkbd.addButton(i->name, n, CTBotKeyboardButtonQuery);
 #ifdef ITENS_PER_ROW
             if (c % ITENS_PER_ROW == (ITENS_PER_ROW - 1))
             {
@@ -83,11 +83,11 @@ bool bt_check(int id)
     for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i)
     {
 #ifdef DEBUG
-        _Serial.printf("BT_CHECK: %d\t%d\t%s\n", (*i).auth, (*i).id, (*i).name);
+        _Serial.printf("BT_CHECK: %d\t%d\t%s\n", i->auth, i->id, i->name);
 #endif
-        if ((*i).id == id)
+        if (i->id == id)
         {
-            return (*i).auth;
+            return i->auth;
         }
     }
     return false;
@@ -116,7 +116,7 @@ void bt_loop()
                     _Serial.print(":BUTTON:");
                     _Serial.println(c);
 #endif
-                    ir_send(c);
+                    ir_rf_send(c);
                     tb.endQuery(msg.callbackQueryID, "Botão enviado!");
                 }
                 else

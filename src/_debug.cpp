@@ -12,6 +12,7 @@
 #ifdef DEBUG
 void dump_ir(CODES irresult)
 {
+    _Serial.println("IR CODE");
     String s;
     switch (irresult.results.decode_type)
     {
@@ -339,6 +340,19 @@ void dump_ir(CODES irresult)
     _Serial.println(irresult.results.value);
     _Serial.print("SIZE: ");
     _Serial.println(irresult.results.bits);
+}
+
+void dump_rf(CODES irresult)
+{
+    _Serial.println("RF CODE");
+    _Serial.print("CODE: ");
+    _Serial.println(irresult.rfcode.code);
+    _Serial.print("LENGHT: ");
+    _Serial.println(irresult.rfcode.length);
+    _Serial.print("DELAY: ");
+    _Serial.println(irresult.rfcode.delay);
+    _Serial.print("PROTOCOL: ");
+    _Serial.println(irresult.rfcode.protocol);
 }
 
 void _hexdump(void *ptr, int buflen)

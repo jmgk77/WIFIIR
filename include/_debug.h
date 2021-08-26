@@ -13,6 +13,7 @@
 
 #ifdef DEBUG
 void dump_ir(CODES irresult);
+void dump_rf(CODES irresult);
 void _hexdump(void *ptr, int buflen);
 void dump_fs();
 void dump_esp8266();

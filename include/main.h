@@ -17,6 +17,9 @@
 #define IR_LED_PIN D2
 #define IR_RECV_PIN D7
 
+#define RF_RX D4
+#define RF_TX D6
+
 #define DEBUG
 // #define DEBUG_SEND
 // #define DEBUG_MALLOC
@@ -80,6 +83,8 @@
 #include <IRrecv.h>
 #include <IRutils.h>
 
+#include <RCSwitch.h>
+
 #ifdef SUPPORT_TELEGRAM
 #include <CTBot.h>
 #endif
@@ -92,8 +97,16 @@ typedef enum
 {
     UNUSED_CODE,
     IR_CODE,
-    //RF_CODE
+    RF_CODE,
 } CODES_TYPE;
+
+typedef struct
+{
+    unsigned long code;
+    unsigned int length;
+    unsigned int delay;
+    unsigned int protocol;
+} rf_results;
 
 typedef struct
 {
@@ -103,7 +116,7 @@ typedef struct
     union
     {
         decode_results results;
-        //rf_results rfcode;
+        rf_results rfcode;
     };
 } CODES;
 
@@ -124,4 +137,4 @@ typedef struct
 #ifdef SUPPORT_TELEGRAM
 #include "telegram.h"
 #endif
-#include "ir.h"
+#include "ir_rf.h"

@@ -14,10 +14,11 @@
 extern ESP8266WebServer server;
 extern CODES irresult;
 extern IRsend irsend;
+extern RCSwitch rf;
 extern WiFiManager wm;
 
 extern bool decoding_onoff;
-extern bool waiting_ir;
+extern bool waiting_ir_rf;
 extern void _end_ir();
 
 extern std::vector<CODES> ir_codes;
