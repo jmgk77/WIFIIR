@@ -70,6 +70,12 @@ void IRAM_ATTR blink_led()
 
 void setup()
 {
+  //blinking LED setup
+  ir_rf_enable = decoding_onoff = false;
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+  ITimer.attachInterruptInterval(LED_BLINK_INTERVAL * 1000, blink_led);
+
   LittleFS.begin();
 
   WiFi.mode(WIFI_STA);
@@ -219,12 +225,6 @@ void setup()
 
   irsend.begin();
   rf.enableTransmit(RF_TX);
-
-  //blinking LED setup
-  ir_rf_enable = decoding_onoff = false;
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW);
-  ITimer.attachInterruptInterval(LED_BLINK_INTERVAL * 1000, blink_led);
 }
 
 /*
