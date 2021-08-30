@@ -35,7 +35,15 @@ void codes_load()
     {
       f.read((uint8_t *)&tmp, sizeof(CODES));
 #ifdef DEBUG_CODES
-      _Serial.printf(resultToHumanReadableBasic(&tmp.results).c_str());
+      if (tmp.type == IR_CODE)
+      {
+        //_Serial.printf(resultToHumanReadableBasic(&tmp.results).c_str());
+        dump_ir(tmp);
+      }
+      else if (tmp.type == RF_CODE)
+      {
+        dump_rf(tmp);
+      }
       _hexdump((void *)&tmp, sizeof(CODES));
 #endif
       ir_codes.push_back(tmp);
