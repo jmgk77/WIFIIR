@@ -68,6 +68,8 @@ void IRAM_ATTR blink_led()
   }
 }
 
+#ifndef HW_TEST
+
 void setup()
 {
   //blinking LED setup
@@ -302,3 +304,76 @@ void loop()
   bt_loop();
 #endif
 }
+
+#else
+
+/*
+██╗  ██╗ █████╗ ██████╗ ██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗    ████████╗███████╗███████╗████████╗
+██║  ██║██╔══██╗██╔══██╗██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝    ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝
+███████║███████║██████╔╝██║  ██║██║ █╗ ██║███████║██████╔╝█████╗         ██║   █████╗  ███████╗   ██║
+██╔══██║██╔══██║██╔══██╗██║  ██║██║███╗██║██╔══██║██╔══██╗██╔══╝         ██║   ██╔══╝  ╚════██║   ██║
+██║  ██║██║  ██║██║  ██║██████╔╝╚███╔███╔╝██║  ██║██║  ██║███████╗       ██║   ███████╗███████║   ██║
+╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝       ╚═╝   ╚══════╝╚══════╝   ╚═╝
+*/
+
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println("");
+  Serial.println("WIFIIR - Starting");
+  Serial.printf("Build Version: %s (%s)\n", VERSION, BUILD_TIMESTAMP);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+  ITimer.attachInterruptInterval(LED_BLINK_INTERVAL * 1000, blink_led);
+  irsend.begin();
+  rf.enableTransmit(RF_TX);
+  irrecv.enableIRIn();
+  rf.enableReceive(RF_RX);
+  Serial.println("Hardware test!");
+  decoding_onoff = true;
+}
+
+void loop()
+{
+  //IR
+  if (irrecv.decode(&irresult.results))
+  {
+    irresult.type = IR_CODE;
+    dump_ir(irresult);
+    irrecv.resume();
+  }
+
+  //RF
+  if (rf.available())
+  {
+    irresult.type = RF_CODE;
+    irresult.rfcode.code = rf.getReceivedValue();
+    irresult.rfcode.length = rf.getReceivedBitlength();
+    irresult.rfcode.delay = rf.getReceivedDelay();
+    irresult.rfcode.protocol = rf.getReceivedProtocol();
+    dump_rf(irresult);
+    rf.resetAvailable();
+  }
+
+  if (Serial.available() > 0)
+  {
+    char buf[64];
+    int rlen = Serial.readBytes(buf, 64);
+
+    if (irresult.type == IR_CODE)
+    {
+      irsend.send(irresult.results.decode_type, irresult.results.value, irresult.results.bits);
+      Serial.print("+");
+    }
+    else if (irresult.type == RF_CODE)
+    {
+      rf.setProtocol(irresult.rfcode.protocol);
+      rf.setPulseLength(irresult.rfcode.delay);
+      rf.send(irresult.rfcode.code, irresult.rfcode.length);
+      Serial.print("*");
+    }
+  }
+  Serial.flush();
+}
+
+#endif

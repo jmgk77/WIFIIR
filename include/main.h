@@ -20,6 +20,8 @@
 #define RF_RX D4
 #define RF_TX D6
 
+// #define HW_TEST
+
 #define DEBUG
 // #define DEBUG_SEND
 // #define DEBUG_MALLOC
@@ -42,6 +44,10 @@
 //
 #ifdef SUPPORT_IMPORT
 #define DEBUG_FS
+#endif
+
+#ifdef HW_TEST
+#define DEBUG
 #endif
 
 #ifndef DEBUG_MALLOC
