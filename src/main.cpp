@@ -107,6 +107,10 @@ void setup()
   //set name in router
   WiFi.hostname(device_name);
 
+  //set timeout
+  wm.setConfigPortalTimeout(180);
+
+  //connect!
   if (!wm.autoConnect("WIFIIR"))
   {
 #ifdef DEBUG
