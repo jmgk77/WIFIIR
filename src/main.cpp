@@ -81,6 +81,7 @@ void setup()
   LittleFS.begin();
 
   WiFi.mode(WIFI_STA);
+  delay(10);
 
   _Serial.begin(115200);
   _Serial.println("");
@@ -109,7 +110,9 @@ void setup()
 
   //set timeout
   wm.setConfigPortalTimeout(180);
-
+  WiFi.setAutoReconnect(true);
+  WiFi.persistent(true);
+  
   //connect!
   if (!wm.autoConnect("WIFIIR"))
   {

@@ -60,10 +60,10 @@
 
 #include <Arduino.h>
 
+#include <ESP8266HTTPUpdateServer.h>
+#include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPUpdateServer.h>
 
 #ifdef SUPPORT_IMPORT
 #include <ESP8266HTTPClient.h>
@@ -85,8 +85,8 @@
 
 #include <LittleFS.h>
 
-#include <IRsend.h>
 #include <IRrecv.h>
+#include <IRsend.h>
 #include <IRutils.h>
 
 #include <RCSwitch.h>
@@ -99,40 +99,35 @@
 #define _TIMERINTERRUPT_LOGLEVEL_ 0
 #include <ESP8266TimerInterrupt.h>
 
-typedef enum
-{
-    UNUSED_CODE,
-    IR_CODE,
-    RF_CODE,
+typedef enum {
+  UNUSED_CODE,
+  IR_CODE,
+  RF_CODE,
 } CODES_TYPE;
 
-typedef struct
-{
-    unsigned long code;
-    unsigned int length;
-    unsigned int delay;
-    unsigned int protocol;
+typedef struct {
+  unsigned long code;
+  unsigned int length;
+  unsigned int delay;
+  unsigned int protocol;
 } rf_results;
 
-typedef struct
-{
-    uint8_t _start;
-    CODES_TYPE type;
-    char name[32];
-    union
-    {
-        decode_results results;
-        rf_results rfcode;
-    };
+typedef struct {
+  uint8_t _start;
+  CODES_TYPE type;
+  char name[32];
+  union {
+    decode_results results;
+    rf_results rfcode;
+  };
 } CODES;
 
 #ifdef SUPPORT_TELEGRAM
-typedef struct
-{
-    uint8_t _start;
-    bool auth;
-    int id;
-    char name[32];
+typedef struct {
+  uint8_t _start;
+  bool auth;
+  int id;
+  char name[32];
 } TUSERS;
 #endif
 
