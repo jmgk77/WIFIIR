@@ -7,7 +7,7 @@
  ╚══╝╚══╝ ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═╝
 */
 
-//Controlador IR via internet
+// Controlador IR via internet
 //
 //(c) JMGK 2021
 
@@ -16,7 +16,7 @@
 const uint16_t kIrLedPin = IR_LED_PIN;
 IRsend irsend(kIrLedPin);
 
-//irRecv vars
+// irRecv vars
 const uint16_t kRecvPin = IR_RECV_PIN;
 const uint16_t kCaptureBufferSize = 1024;
 const uint8_t kTimeout = 50;
@@ -40,11 +40,11 @@ ESP8266WebServer server;
 ESP8266HTTPUpdateServer httpUpdater;
 #endif
 
-//led blink vars
+// led blink vars
 #define LED_BLINK_INTERVAL 300
 ESP8266Timer ITimer;
 
-//device name
+// device name
 String wifiir_subname;
 
 //
@@ -59,10 +59,8 @@ String boot_time;
 ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝
 */
 
-void IRAM_ATTR blink_led()
-{
-  if (decoding_onoff)
-  {
+void IRAM_ATTR blink_led() {
+  if (decoding_onoff) {
     digitalWrite(LED_PIN, toggle);
     toggle = !toggle;
   }
@@ -70,9 +68,8 @@ void IRAM_ATTR blink_led()
 
 #ifndef HW_TEST
 
-void setup()
-{
-  //blinking LED setup
+void setup() {
+  // blinking LED setup
   ir_rf_enable = decoding_onoff = false;
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
@@ -86,7 +83,7 @@ void setup()
   _Serial.begin(115200);
   _Serial.println("");
   _Serial.println("WIFIIR - Starting");
-  _Serial.printf("Build Version: %s (%s)\n", VERSION, BUILD_TIMESTAMP);
+  _Serial.printf("Build Version: %s\n", VERSION);
   wm.setDebugOutput(false);
 #ifdef DEBUG
   _Serial.setDebugOutput(true);
@@ -98,42 +95,39 @@ void setup()
   dump_esp8266();
 #endif
 
-  //load device name
+  // load device name
   wifiir_name_load();
-  String device_name = "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
+  String device_name =
+      "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
 #ifdef DEBUG
   _Serial.printf("Device Name: %s\n", device_name.c_str());
 #endif
 
-  //set name in router
+  // set name in router
   WiFi.hostname(device_name);
 
-  //set timeout
+  // set timeout
   wm.setConfigPortalTimeout(180);
   WiFi.setAutoReconnect(true);
   WiFi.persistent(true);
-  
-  //connect!
-  if (!wm.autoConnect("WIFIIR"))
-  {
+
+  // connect!
+  if (!wm.autoConnect("WIFIIR")) {
 #ifdef DEBUG
     _Serial.println("Failed to connect");
 #endif
     ESP.restart();
     delay(1000);
-  }
-  else
-  {
+  } else {
 #ifdef DEBUG
     _Serial.println("Connected...");
 #endif
   }
 
-  //get internet time
+  // get internet time
   configTime("<-03>3", "pool.ntp.org");
-  //verifica 2021...
-  while (time(nullptr) < 1609459200)
-  {
+  // verifica 2021...
+  while (time(nullptr) < 1609459200) {
 #ifdef DEBUG
     _Serial.print(".");
 #endif
@@ -160,16 +154,13 @@ void setup()
   dump_fs();
 #endif
 
-  //discovery protocols
+  // discovery protocols
 #ifdef SUPPORT_MDNS
-  if (MDNS.begin(device_name))
-  {
+  if (MDNS.begin(device_name)) {
 #ifdef DEBUG
     _Serial.println("MDNS OK");
 #endif
-  }
-  else
-  {
+  } else {
 #ifdef DEBUG
     _Serial.println("MDNS NOK");
 #endif
@@ -178,14 +169,11 @@ void setup()
 #endif
 
 #ifdef SUPPORT_NETBIOS
-  if (NBNS.begin(device_name.c_str()))
-  {
+  if (NBNS.begin(device_name.c_str())) {
 #ifdef DEBUG
     _Serial.println("NETBIOS OK");
 #endif
-  }
-  else
-  {
+  } else {
 #ifdef DEBUG
     _Serial.println("NETBIOS NOK");
 #endif
@@ -193,14 +181,11 @@ void setup()
 #endif
 
 #ifdef SUPPORT_LLMNR
-  if (LLMNR.begin(device_name.c_str()))
-  {
+  if (LLMNR.begin(device_name.c_str())) {
 #ifdef DEBUG
     _Serial.println("LLMNR OK");
 #endif
-  }
-  else
-  {
+  } else {
 #ifdef DEBUG
     _Serial.println("LLMNR NOK");
 #endif
@@ -221,10 +206,10 @@ void setup()
 #endif
 #endif
 
-  //carrega botões salvos
+  // carrega botões salvos
   codes_load();
 
-  //setup telegram bot
+  // setup telegram bot
 #ifdef SUPPORT_TELEGRAM
   telegram_load();
   telegram_users_load();
@@ -245,16 +230,14 @@ void setup()
 ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝
 */
 
-void _end_ir()
-{
+void _end_ir() {
   irrecv.disableIRIn();
   rf.disableReceive();
   ir_rf_enable = decoding_onoff = false;
   digitalWrite(LED_PIN, LOW);
 }
 
-void loop()
-{
+void loop() {
   server.handleClient();
 #ifdef SUPPORT_MDNS
   MDNS.update();
@@ -263,35 +246,31 @@ void loop()
   SSDP_esp8266.handleClient();
 #endif
 
-  //lendo codigo?
-  if (decoding_onoff)
-  {
-    //habilita leitores
-    if (!ir_rf_enable)
-    {
+  // lendo codigo?
+  if (decoding_onoff) {
+    // habilita leitores
+    if (!ir_rf_enable) {
       irrecv.enableIRIn();
       rf.enableReceive(RF_RX);
       ir_rf_enable = true;
       waiting_ir_rf = true;
     }
 
-    //esperando resultado...
+    // esperando resultado...
 
-    //IR
-    if (irrecv.decode(&irresult.results))
-    {
+    // IR
+    if (irrecv.decode(&irresult.results)) {
       irresult.type = IR_CODE;
 #ifdef DEBUG
       dump_ir(irresult);
 #endif
-      //captura feita
+      // captura feita
       waiting_ir_rf = false;
       _end_ir();
     }
 
-    //RF
-    if (rf.available())
-    {
+    // RF
+    if (rf.available()) {
       irresult.type = RF_CODE;
       irresult.rfcode.code = rf.getReceivedValue();
       irresult.rfcode.length = rf.getReceivedBitlength();
@@ -300,13 +279,13 @@ void loop()
 #ifdef DEBUG
       dump_rf(irresult);
 #endif
-      //captura feita
+      // captura feita
       waiting_ir_rf = false;
       _end_ir();
     }
   }
 
-//telegram loop
+// telegram loop
 #ifdef SUPPORT_TELEGRAM
   bt_loop();
 #endif
@@ -315,16 +294,18 @@ void loop()
 #else
 
 /*
-██╗  ██╗ █████╗ ██████╗ ██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗    ████████╗███████╗███████╗████████╗
-██║  ██║██╔══██╗██╔══██╗██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝    ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝
-███████║███████║██████╔╝██║  ██║██║ █╗ ██║███████║██████╔╝█████╗         ██║   █████╗  ███████╗   ██║
-██╔══██║██╔══██║██╔══██╗██║  ██║██║███╗██║██╔══██║██╔══██╗██╔══╝         ██║   ██╔══╝  ╚════██║   ██║
-██║  ██║██║  ██║██║  ██║██████╔╝╚███╔███╔╝██║  ██║██║  ██║███████╗       ██║   ███████╗███████║   ██║
-╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝       ╚═╝   ╚══════╝╚══════╝   ╚═╝
+██╗  ██╗ █████╗ ██████╗ ██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
+████████╗███████╗███████╗████████╗ ██║  ██║██╔══██╗██╔══██╗██╔══██╗██║
+██║██╔══██╗██╔══██╗██╔════╝    ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝
+███████║███████║██████╔╝██║  ██║██║ █╗ ██║███████║██████╔╝█████╗         ██║
+█████╗  ███████╗   ██║ ██╔══██║██╔══██║██╔══██╗██║
+██║██║███╗██║██╔══██║██╔══██╗██╔══╝         ██║   ██╔══╝  ╚════██║   ██║ ██║
+██║██║  ██║██║  ██║██████╔╝╚███╔███╔╝██║  ██║██║  ██║███████╗       ██║
+███████╗███████║   ██║ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝
+╚═╝╚══════╝       ╚═╝   ╚══════╝╚══════╝   ╚═╝
 */
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
   Serial.println("");
   Serial.println("WIFIIR - Starting");
@@ -340,19 +321,16 @@ void setup()
   decoding_onoff = true;
 }
 
-void loop()
-{
-  //IR
-  if (irrecv.decode(&irresult.results))
-  {
+void loop() {
+  // IR
+  if (irrecv.decode(&irresult.results)) {
     irresult.type = IR_CODE;
     dump_ir(irresult);
     irrecv.resume();
   }
 
-  //RF
-  if (rf.available())
-  {
+  // RF
+  if (rf.available()) {
     irresult.type = RF_CODE;
     irresult.rfcode.code = rf.getReceivedValue();
     irresult.rfcode.length = rf.getReceivedBitlength();
@@ -362,18 +340,15 @@ void loop()
     rf.resetAvailable();
   }
 
-  if (Serial.available() > 0)
-  {
+  if (Serial.available() > 0) {
     char buf[64];
     int rlen = Serial.readBytes(buf, 64);
 
-    if (irresult.type == IR_CODE)
-    {
-      irsend.send(irresult.results.decode_type, irresult.results.value, irresult.results.bits);
+    if (irresult.type == IR_CODE) {
+      irsend.send(irresult.results.decode_type, irresult.results.value,
+                  irresult.results.bits);
       Serial.print("+");
-    }
-    else if (irresult.type == RF_CODE)
-    {
+    } else if (irresult.type == RF_CODE) {
       rf.setProtocol(irresult.rfcode.protocol);
       rf.setPulseLength(irresult.rfcode.delay);
       rf.send(irresult.rfcode.code, irresult.rfcode.length);

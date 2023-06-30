@@ -131,9 +131,9 @@ typedef struct {
 } TUSERS;
 #endif
 
-#include "Version.h"
 #include "_debug.h"
 #include "persistence.h"
+#include "version.h"
 #include "www.h"
 #ifdef SUPPORT_TELEGRAM
 #include "telegram.h"

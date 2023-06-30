@@ -1,10 +1,12 @@
 /*
-██╗    ██╗██╗    ██╗██╗    ██╗    ██╗  ██╗ █████╗ ███╗   ██╗██████╗ ██╗     ███████╗██████╗ ███████╗
-██║    ██║██║    ██║██║    ██║    ██║  ██║██╔══██╗████╗  ██║██╔══██╗██║     ██╔════╝██╔══██╗██╔════╝
-██║ █╗ ██║██║ █╗ ██║██║ █╗ ██║    ███████║███████║██╔██╗ ██║██║  ██║██║     █████╗  ██████╔╝███████╗
-██║███╗██║██║███╗██║██║███╗██║    ██╔══██║██╔══██║██║╚██╗██║██║  ██║██║     ██╔══╝  ██╔══██╗╚════██║
-╚███╔███╔╝╚███╔███╔╝╚███╔███╔╝    ██║  ██║██║  ██║██║ ╚████║██████╔╝███████╗███████╗██║  ██║███████║
- ╚══╝╚══╝  ╚══╝╚══╝  ╚══╝╚══╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝
+██╗    ██╗██╗    ██╗██╗    ██╗    ██╗  ██╗ █████╗ ███╗   ██╗██████╗ ██╗
+███████╗██████╗ ███████╗ ██║    ██║██║    ██║██║    ██║    ██║  ██║██╔══██╗████╗
+██║██╔══██╗██║     ██╔════╝██╔══██╗██╔════╝ ██║ █╗ ██║██║ █╗ ██║██║ █╗ ██║
+███████║███████║██╔██╗ ██║██║  ██║██║     █████╗  ██████╔╝███████╗
+██║███╗██║██║███╗██║██║███╗██║    ██╔══██║██╔══██║██║╚██╗██║██║  ██║██║ ██╔══╝
+██╔══██╗╚════██║ ╚███╔███╔╝╚███╔███╔╝╚███╔███╔╝    ██║  ██║██║  ██║██║
+╚████║██████╔╝███████╗███████╗██║  ██║███████║ ╚══╝╚══╝  ╚══╝╚══╝  ╚══╝╚══╝ ╚═╝
+╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝
 */
 
 #include "www.h"
@@ -75,15 +77,17 @@ const char html_footer[] PROGMEM = "\
 <a class='doc' href='/g'>Configurações</a><br>\
 </nav></footer></body></html>";
 
-void send_html(const char *h)
-{
+void send_html(const char *h) {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.send_P(200, "text/html", html_header);
-  String s = "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
-  server.sendContent("<div class='x card'><p class='x'>" + s + "</p></div><br><div class='col-sm-12'><div class='card fluid'>");
+  String s =
+      "WIFIIR" + (wifiir_subname.isEmpty() ? "" : ("-" + wifiir_subname));
+  server.sendContent(
+      "<div class='x card'><p class='x'>" + s +
+      "</p></div><br><div class='col-sm-12'><div class='card fluid'>");
   server.sendContent(h);
   server.sendContent_P(html_footer);
 #ifdef DEBUG_SEND
@@ -100,8 +104,7 @@ void send_html(const char *h)
 ╚═╝  ╚═╝ ╚═════╝  ╚═════╝    ╚═╝
 */
 
-void handle_root()
-{
+void handle_root() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -109,17 +112,17 @@ void handle_root()
 
   int index = server.hasArg("i") ? atoi(server.arg("i").c_str()) : 0;
 
-  //limit index 0-max
+  // limit index 0-max
   index = (index < (int)ir_codes.size()) ? index : ((int)ir_codes.size() - 10);
   index = (index < 0) ? 0 : index;
 
   int c = index;
 
-  //table
+  // table
   strcpy(r, "<div class='f'>");
   char t[2] = {0, 0};
-  for (auto i = ir_codes.cbegin() + index; (i != ir_codes.cend()) && (c < (index + 10)); ++i, c++)
-  {
+  for (auto i = ir_codes.cbegin() + index;
+       (i != ir_codes.cend()) && (c < (index + 10)); ++i, c++) {
     t[0] = (i->type == IR_CODE) ? 'w' : 'r';
 
     sprintf_P(r + strlen(r), PSTR("\
@@ -134,15 +137,13 @@ void handle_root()
               i->name, t, c, c, c, c, c);
   }
 
-  //nav
+  // nav
   strcat(r, "<div class='g'>");
-  if (index)
-  {
+  if (index) {
     sprintf(r + strlen(r), "<a href='/?i=%d'> < </a>", (index - 10));
   }
   strcat(r, "</div><div class='c'></div><div class='g'>");
-  if (((unsigned int)c < ir_codes.size()))
-  {
+  if (((unsigned int)c < ir_codes.size())) {
     sprintf(r + strlen(r), "<a href='/?i=%d'> > </a>", (index + 10));
   }
   strcat(r, "</div></div>");
@@ -151,13 +152,15 @@ void handle_root()
   free(r);
 }
 
-void send_warning(const char *txt, int timeout = 500)
-{
+void send_warning(const char *txt, int timeout = 500) {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
   char *r = (char *)_malloc(512);
-  sprintf_P(r, PSTR("<div class='x card warning'><p class='x'>%s</p></div><script>setTimeout(function (){document.location.href = '/';}, %d);</script>"),
+  sprintf_P(r,
+            PSTR("<div class='x card warning'><p "
+                 "class='x'>%s</p></div><script>setTimeout(function "
+                 "(){document.location.href = '/';}, %d);</script>"),
             txt, timeout);
   send_html(r);
   free(r);
@@ -172,8 +175,7 @@ void send_warning(const char *txt, int timeout = 500)
 ╚═╝  ╚═╝╚═════╝ ╚═════╝
 */
 
-void handle_add_timeout()
-{
+void handle_add_timeout() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -181,23 +183,20 @@ void handle_add_timeout()
   server.send(200, "text/txt", "OK");
 }
 
-void handle_add_ir_status()
-{
+void handle_add_ir_status() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
   server.send(200, "text/txt", decoding_onoff ? "ON" : "OFF");
 }
 
-void handle_add()
-{
+void handle_add() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
   String button = server.hasArg("b") ? server.arg("b") : "";
   button.trim();
-  if (button.isEmpty() || waiting_ir_rf)
-  {
+  if (button.isEmpty() || waiting_ir_rf) {
     char *r = (char *)_malloc(3072);
     sprintf_P(r, PSTR("\
 <script>\
@@ -224,15 +223,13 @@ a=setInterval(()=>{fetch('/h').then(b=>b.text()).then((r)=>{if(r==='OFF'){clearI
 </form>\
 "),
               button);
-    //inicia leitor de IR (antes de mandar a pagina)
+    // inicia leitor de IR (antes de mandar a pagina)
     decoding_onoff = true;
-    //send
+    // send
     send_html(r);
     free(r);
-  }
-  else
-  {
-    //save button info
+  } else {
+    // save button info
     strncpy(irresult.name, button.c_str(), sizeof(irresult.name) - 1);
     ir_codes.push_back(irresult);
     codes_save();
@@ -249,8 +246,7 @@ a=setInterval(()=>{fetch('/h').then(b=>b.text()).then((r)=>{if(r==='OFF'){clearI
 ╚══════╝╚══════╝╚═╝  ╚═══╝╚═════╝
 */
 
-void handle_press()
-{
+void handle_press() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -267,25 +263,21 @@ void handle_press()
 ╚══════╝╚═════╝ ╚═╝   ╚═╝
 */
 
-void handle_edit()
-{
+void handle_edit() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
   int button = atoi(server.arg("b").c_str());
   auto i = ir_codes.cbegin() + button;
-  if (server.hasArg("n"))
-  {
-    //chamou com nome, modifica e salva
+  if (server.hasArg("n")) {
+    // chamou com nome, modifica e salva
     String n = server.arg("n");
     n.trim();
     strcpy((char *)i->name, n.c_str());
     codes_save();
     send_warning("Botão editado!");
-  }
-  else
-  {
-    //chamou sem nome, pergunta
+  } else {
+    // chamou sem nome, pergunta
     char *r = (char *)_malloc(512);
     sprintf_P(r, PSTR("\
 <form class='f' action='/e' method='POST'>\
@@ -309,8 +301,7 @@ void handle_edit()
 ╚═╝     ╚═╝ ╚═════╝   ╚═══╝  ╚══════╝
 */
 
-void move_button(int button, int offset)
-{
+void move_button(int button, int offset) {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -322,9 +313,8 @@ void move_button(int button, int offset)
   codes_save();
 }
 
-void _main_with_index(int b)
-{
-  //round to start of page
+void _main_with_index(int b) {
+  // round to start of page
   b /= 10;
   b *= 10;
   String s = "<script>document.location.href = '/?i=";
@@ -333,29 +323,25 @@ void _main_with_index(int b)
   send_html(s.c_str());
 }
 
-void handle_up()
-{
+void handle_up() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
   int button = atoi(server.arg("b").c_str());
-  //primeiro botão nao pode ir pra cima
-  if (button != 0)
-  {
+  // primeiro botão nao pode ir pra cima
+  if (button != 0) {
     move_button(button, -1);
   }
   _main_with_index(button);
 }
 
-void handle_down()
-{
+void handle_down() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
   int button = atoi(server.arg("b").c_str());
-  //ultimo botão não pode ir pra baixo
-  if (button != (int)(ir_codes.size() - 1))
-  {
+  // ultimo botão não pode ir pra baixo
+  if (button != (int)(ir_codes.size() - 1)) {
     move_button(button, 1);
   }
   _main_with_index(button);
@@ -370,8 +356,7 @@ void handle_down()
 ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚══════╝
 */
 
-void handle_del()
-{
+void handle_del() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -390,12 +375,15 @@ void handle_del()
  ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝
 */
 
-void handle_config()
-{
+void handle_config() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  char *r = (char *)_malloc((((218 + 32 + 517 + 170 + 454 + 64 + 185 + 172 + 172 + 265 + 28 + 20 + 61) + 15) >> 2) << 2);
+  char *r = (char *)_malloc((((218 + 32 + 517 + 170 + 454 + 64 + 185 + 172 +
+                               172 + 265 + 28 + 20 + 61) +
+                              15) >>
+                             2)
+                            << 2);
   sprintf_P(r, PSTR("\
 <form class='f' action='/w' method='POST'><div class='b'>Device name</div>\
 <div class='c'><input type='text' name='n' maxlength='31' value='%s'/></div>\
@@ -434,25 +422,24 @@ document.getElementById(\"a\").disabled=!this.checked;document.getElementById(\"
 <div class='b'>Atualizar Firmware</div><div class='c'><input type='file' accept='.bin,.bin.gz' name='firmware'></div><div class='b'>\
 <input type='submit' value='Atualizar'></div></form>"));
 #endif
-  sprintf(r + strlen(r), "<br>Build Version: %s (%s)<br><br>", VERSION, BUILD_TIMESTAMP);
+  sprintf(r + strlen(r), "<br>Build Version: %s<br><br>", VERSION);
 #ifdef DEBUG
-  sprintf(r + strlen(r), "<a href='/c'>HW Info</a><br><a href='/f'>File browser</a><br>");
+  sprintf(r + strlen(r),
+          "<a href='/c'>HW Info</a><br><a href='/f'>File browser</a><br>");
 #endif
   send_html(r);
   free(r);
 }
 
 #ifdef DEBUG_GENRNDBTN
-void handle_randombtn()
-{
+void handle_randombtn() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
   CODES tmp;
   memset(&tmp, 0, sizeof(CODES));
-  //gera botões aleatorios
-  for (int i = 1; i <= DEBUG_GENRNDBTN; i++)
-  {
+  // gera botões aleatorios
+  for (int i = 1; i <= DEBUG_GENRNDBTN; i++) {
     itoa(i, tmp.name, 10);
     ir_codes.push_back(tmp);
   }
@@ -464,15 +451,13 @@ void handle_randombtn()
 #ifdef SUPPORT_TELEGRAM
 
 #ifdef DEBUG_GENRNDUSR
-void handle_randomusr()
-{
+void handle_randomusr() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
   TUSERS tmp;
-  //gera botões aleatorios
-  for (int i = 1; i <= DEBUG_GENRNDUSR; i++)
-  {
+  // gera botões aleatorios
+  for (int i = 1; i <= DEBUG_GENRNDUSR; i++) {
     tmp.auth = false;
     tmp.id = rand();
     itoa(tmp.id, tmp.name, 16);
@@ -485,8 +470,7 @@ void handle_randomusr()
 }
 #endif
 
-void handle_token()
-{
+void handle_token() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -498,25 +482,24 @@ void handle_token()
   send_warning("Token Salvo!");
 }
 
-void handle_userman()
-{
+void handle_userman() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  if (!server.hasArg("w"))
-  {
-    //build table
-    char *r = (char *)_malloc(42 + ((165 + 8 + 32 + 7) * bt_users.size()) + 181);
+  if (!server.hasArg("w")) {
+    // build table
+    char *r =
+        (char *)_malloc(42 + ((165 + 8 + 32 + 7) * bt_users.size()) + 181);
 
     strcpy(r, "<form class='f' action='/x' method='POST'>");
     int c = 0;
-    for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i, c++)
-    {
-      sprintf_P(r + strlen(r), PSTR("<div class='b'></div><div class='b'><input type='checkbox' name='%d' value='1' %s></div>\
+    for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i, c++) {
+      sprintf_P(
+          r + strlen(r),
+          PSTR(
+              "<div class='b'></div><div class='b'><input type='checkbox' name='%d' value='1' %s></div>\
 <div class='b'>%08x</div><div class='b'>%s</div><div class='b'></div>"),
-                c,
-                i->auth ? "checked" : "",
-                i->id, i->name);
+          c, i->auth ? "checked" : "", i->id, i->name);
     }
     strcat_P(r, PSTR("<div class='b'></div><div class='b'></div>\
 <input class='b' name='w' type='hidden' value='1'><input type='submit' value='Salvar'>\
@@ -524,14 +507,11 @@ void handle_userman()
 
     send_html(r);
     free(r);
-  }
-  else
-  {
-    //manage results
+  } else {
+    // manage results
     std::vector<TUSERS> tmp_users;
     int c = 0;
-    for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i, c++)
-    {
+    for (auto i = bt_users.cbegin(); i != bt_users.cend(); ++i, c++) {
       TUSERS tmp;
       tmp.auth = server.hasArg(String(c)) ? true : false;
       tmp.id = i->id;
@@ -547,8 +527,7 @@ void handle_userman()
 }
 #endif
 
-void handle_name()
-{
+void handle_name() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -558,8 +537,7 @@ void handle_name()
   send_warning("Nome Salvo!");
 }
 
-void handle_clear()
-{
+void handle_clear() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -568,8 +546,7 @@ void handle_clear()
   send_warning("Botões limpos!");
 }
 
-void reboot()
-{
+void reboot() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -578,8 +555,7 @@ void reboot()
   delay(2000);
 }
 
-void handle_reset()
-{
+void handle_reset() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -588,8 +564,7 @@ void handle_reset()
   reboot();
 }
 
-void handle_reboot()
-{
+void handle_reboot() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -606,8 +581,7 @@ void handle_reboot()
      ╚═╝ ╚═════╝      ╚═╝
 */
 
-void handle_404()
-{
+void handle_404() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -624,12 +598,11 @@ void handle_404()
 */
 
 #ifdef SUPPORT_IMPORT
-void _download(String url, String filename, bool append)
-{
+void _download(String url, String filename, bool append) {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  //import
+  // import
   WiFiClient client;
   HTTPClient http;
 
@@ -638,12 +611,10 @@ void _download(String url, String filename, bool append)
 #endif
 
   File f = LittleFS.open(filename, append ? "a" : "w");
-  if (f)
-  {
+  if (f) {
     http.begin(client, url);
     int httpCode = http.GET();
-    if (httpCode == HTTP_CODE_OK)
-    {
+    if (httpCode == HTTP_CODE_OK) {
       char buf[512];
       int len = http.getSize();
 #ifdef DEBUG
@@ -651,29 +622,24 @@ void _download(String url, String filename, bool append)
       _Serial.println(len);
 #endif
 
-      while (http.connected() && (len > 0 || len == -1))
-      {
+      while (http.connected() && (len > 0 || len == -1)) {
         int c = client.readBytes(buf, min((int)len, (int)sizeof(buf)));
 #ifdef DEBUG
         _Serial.printf("readBytes: %d\n", c);
 #endif
         f.write(buf, c);
-        if (len > 0)
-        {
+        if (len > 0) {
           len -= c;
         }
       }
-    }
-    else
-    {
+    } else {
 #ifdef DEBUG
-      _Serial.printf("http (%d), error: %s\n", httpCode, http.errorToString(httpCode).c_str());
+      _Serial.printf("http (%d), error: %s\n", httpCode,
+                     http.errorToString(httpCode).c_str());
 #endif
     }
     f.close();
-  }
-  else
-  {
+  } else {
 #ifdef DEBUG
     _Serial.println("File error");
 #endif
@@ -681,34 +647,29 @@ void _download(String url, String filename, bool append)
   http.end();
 }
 
-void handle_import()
-{
+void handle_import() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
-  //import
-  if (server.hasArg("n"))
-  {
+  // import
+  if (server.hasArg("n")) {
     String url = "http://" + server.arg("n") + "/f?n=codes.bin";
     _download(url, "codes.bin", true);
 
-    //limpa e recarrega
+    // limpa e recarrega
     ir_codes.clear();
     codes_load();
 
     send_warning("Códigos importados!");
-  }
-  else
-  {
+  } else {
 #ifdef DEBUG
     _Serial.println("Sending mDNS query");
 #endif
-    //search for services
+    // search for services
     String s = "<div class='f'>";
     int n = MDNS.queryService("http", "tcp");
     int c = 0;
-    for (int i = 0; i < n; ++i)
-    {
+    for (int i = 0; i < n; ++i) {
       String sname = MDNS.hostname(i);
       String sip = MDNS.IP(i).toString();
 #ifdef DEBUG
@@ -719,33 +680,31 @@ void handle_import()
       _Serial.print(sip);
       _Serial.println(")");
 #endif
-      //check WIFIIR service
-      if (sname.startsWith("WIFIIR"))
-      {
-        //remove ".local"
+      // check WIFIIR service
+      if (sname.startsWith("WIFIIR")) {
+        // remove ".local"
         sname = sname.substring(0, sname.length() - 6);
-        //build html
-        s += "<div class='b'></div><div class='b'><input type='button' style='background-color:#f8f8f8' disabled value='";
+        // build html
+        s += "<div class='b'></div><div class='b'><input type='button' "
+             "style='background-color:#f8f8f8' disabled value='";
         s += sname;
-        s += "'></div><div class='b'></div><div class='b'><input type='button' onclick='location.href=\"/q?n=";
+        s += "'></div><div class='b'></div><div class='b'><input type='button' "
+             "onclick='location.href=\"/q?n=";
         s += sip;
         s += "\";' value='Importar' /></div><div class='b'></div>";
         c++;
       }
     }
     MDNS.removeQuery();
-    if (c)
-    {
+    if (c) {
 #ifdef DEBUG
       _Serial.print(n);
       _Serial.println(" service(s) found");
 #endif
       s += "</div>";
-      //send html
+      // send html
       send_html(s.c_str());
-    }
-    else
-    {
+    } else {
 #ifdef DEBUG
       _Serial.println("no services found");
 #endif
@@ -765,49 +724,44 @@ void handle_import()
 */
 
 #ifdef DEBUG_FS
-void handle_files()
-{
+void handle_files() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
 
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
-  //download
-  if (server.hasArg("n"))
-  {
+  // download
+  if (server.hasArg("n")) {
     String fname = server.arg("n");
     char buf[512];
     int r;
     File f = LittleFS.open(fname, "r");
     server.setContentLength(f.size());
     server.send(200, "application/octet-stream", "");
-    do
-    {
+    do {
       r = f.read((uint8_t *)&buf, sizeof(buf));
       server.sendContent(buf, r);
     } while (r == sizeof(buf));
     f.close();
-  }
-  else if (server.hasArg("x"))
-  //delete
+  } else if (server.hasArg("x"))
+  // delete
   {
     String fname = server.arg("x");
     LittleFS.remove(fname);
-    server.send(200, "text/html", "<script>document.location.href = '/f'</script>");
-  }
-  else
-  //dir list
+    server.send(200, "text/html",
+                "<script>document.location.href = '/f'</script>");
+  } else
+  // dir list
   {
     String s;
     char buf[16];
     server.send(200, "text/html", "");
     Dir dir = LittleFS.openDir("/");
 
-    while (dir.next())
-    {
-      if (dir.isFile())
-      {
-        s = "<a download='" + dir.fileName() + "' href='f?n=" + dir.fileName() + "'>" + dir.fileName() + "</a>";
+    while (dir.next()) {
+      if (dir.isFile()) {
+        s = "<a download='" + dir.fileName() + "' href='f?n=" + dir.fileName() +
+            "'>" + dir.fileName() + "</a>";
         itoa(dir.fileSize(), buf, 10);
         s += "    (" + String(buf) + ")    ";
         const time_t t = dir.fileTime();
@@ -830,8 +784,7 @@ void handle_files()
 ╚═╝╚═╝  ╚═══╝╚═╝      ╚═════╝
 */
 
-void handle_info()
-{
+void handle_info() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
@@ -839,16 +792,20 @@ void handle_info()
   LittleFS.info(fs_info);
 
   char *buf = (char *)_malloc(512);
-  sprintf_P(buf, PSTR("OK\n\nBuild Version: %s (%s)\nReset: %s\nLocal IP: %s\nBoot time: %s\n\
+  sprintf_P(
+      buf,
+      PSTR("OK\n\nBuild Version: %s\nReset: %s\nLocal IP: %s\nBoot time: %s\n\
 ESP8266_INFO\ngetBootMode: %d\ngetSdkVersion: %s\ngetBootVersion: %d\ngetChipId: %08x\n\
 getFlashChipSize: %d\ngetFlashChipRealSize: %d\ngetFlashChipSizeByChipId: %d\ngetFlashChipId: %08x\n\
 getFreeHeap: %d\n\nFS_INFO\ntotalBytes: %d\nusedBytes: %d\nblockSize: %d\npageSize: %d\n\
 maxOpenFiles: %d\nmaxPathLength: %d\n\n"),
-            VERSION, BUILD_TIMESTAMP,
-            ESP.getResetReason().c_str(), WiFi.localIP().toString().c_str(), boot_time.c_str(),
-            ESP.getBootMode(), ESP.getSdkVersion(), ESP.getBootVersion(), ESP.getChipId(), ESP.getFlashChipSize(),
-            ESP.getFlashChipRealSize(), ESP.getFlashChipSizeByChipId(), ESP.getFlashChipId(), ESP.getFreeHeap(),
-            fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
+      VERSION, ESP.getResetReason().c_str(), WiFi.localIP().toString().c_str(),
+      boot_time.c_str(), ESP.getBootMode(), ESP.getSdkVersion(),
+      ESP.getBootVersion(), ESP.getChipId(), ESP.getFlashChipSize(),
+      ESP.getFlashChipRealSize(), ESP.getFlashChipSizeByChipId(),
+      ESP.getFlashChipId(), ESP.getFreeHeap(), fs_info.totalBytes,
+      fs_info.usedBytes, fs_info.blockSize, fs_info.pageSize,
+      fs_info.maxOpenFiles, fs_info.maxPathLength);
   server.send(200, "text/txt", buf);
   free(buf);
 }
@@ -862,14 +819,13 @@ maxOpenFiles: %d\nmaxPathLength: %d\n\n"),
 ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝
 */
 
-void install_www_handlers()
-{
+void install_www_handlers() {
 #ifdef DEBUG_F
   _Serial.println(__func__);
 #endif
 
-  //abcdefghIJklMNOpqrStuvwxyz
-  //description.xml
+  // abcdefghIJklMNOpqrStuvwxyz
+  // description.xml
   server.on("/", handle_root);
   {
     server.on("/p", handle_press);
@@ -909,8 +865,8 @@ void install_www_handlers()
 #endif
   }
 #ifdef SUPPORT_SSDP
-  server.on("/description.xml", HTTP_GET, []()
-            { SSDP_esp8266.schema(server.client()); });
+  server.on("/description.xml", HTTP_GET,
+            []() { SSDP_esp8266.schema(server.client()); });
 #endif
   server.on("/c", handle_info);
   server.onNotFound(handle_404);
