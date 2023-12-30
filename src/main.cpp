@@ -11,6 +11,10 @@
 //
 //(c) JMGK 2021
 
+#define RELEASE
+// #define HARDWARE
+// #define BATCH_IR
+
 #include "main.h"
 
 const uint16_t kIrLedPin = IR_LED_PIN;
@@ -66,7 +70,7 @@ void IRAM_ATTR blink_led() {
   }
 }
 
-#ifndef HW_TEST
+#ifdef RELEASE
 
 void setup() {
   // blinking LED setup
@@ -291,25 +295,22 @@ void loop() {
 #endif
 }
 
-#else
+#elif defined(HARDWARE)
 
 /*
 ██╗  ██╗ █████╗ ██████╗ ██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
-████████╗███████╗███████╗████████╗ ██║  ██║██╔══██╗██╔══██╗██╔══██╗██║
-██║██╔══██╗██╔══██╗██╔════╝    ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝
-███████║███████║██████╔╝██║  ██║██║ █╗ ██║███████║██████╔╝█████╗         ██║
-█████╗  ███████╗   ██║ ██╔══██║██╔══██║██╔══██╗██║
-██║██║███╗██║██╔══██║██╔══██╗██╔══╝         ██║   ██╔══╝  ╚════██║   ██║ ██║
-██║██║  ██║██║  ██║██████╔╝╚███╔███╔╝██║  ██║██║  ██║███████╗       ██║
-███████╗███████║   ██║ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝
-╚═╝╚══════╝       ╚═╝   ╚══════╝╚══════╝   ╚═╝
+██║  ██║██╔══██╗██╔══██╗██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
+███████║███████║██████╔╝██║  ██║██║ █╗ ██║███████║██████╔╝█████╗
+██╔══██║██╔══██║██╔══██╗██║  ██║██║███╗██║██╔══██║██╔══██╗██╔══╝
+██║  ██║██║  ██║██║  ██║██████╔╝╚███╔███╔╝██║  ██║██║  ██║███████╗
+╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
 */
 
 void setup() {
   Serial.begin(115200);
   Serial.println("");
   Serial.println("WIFIIR - Starting");
-  Serial.printf("Build Version: %s (%s)\n", VERSION, BUILD_TIMESTAMP);
+  Serial.printf("Build Version: %s\n", VERSION);
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
   ITimer.attachInterruptInterval(LED_BLINK_INTERVAL * 1000, blink_led);
@@ -356,6 +357,65 @@ void loop() {
     }
   }
   Serial.flush();
+}
+
+#elif defined(BATCH_IR)
+/*
+██████╗  █████╗ ████████╗ ██████╗██╗  ██╗
+██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██║  ██║
+██████╔╝███████║   ██║   ██║     ███████║
+██╔══██╗██╔══██║   ██║   ██║     ██╔══██║
+██████╔╝██║  ██║   ██║   ╚██████╗██║  ██║
+╚═════╝ ╚═╝  ╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝
+*/
+
+#include <Ticker.h>
+
+Ticker s;
+int count = 0;
+int s_count = 0;
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  LittleFS.begin();
+  Serial.println("");
+  Serial.println("WIFIIR - Starting");
+  Serial.printf("Build Version: %s\n", VERSION);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+  ITimer.attachInterruptInterval(LED_BLINK_INTERVAL * 1000, blink_led);
+  irrecv.enableIRIn();
+  Serial.println("Batch IR add");
+  decoding_onoff = true;
+  codes_load();
+  s.attach(1, []() { s_count++; });
+}
+
+void loop() {
+  // IR
+  if (irrecv.decode(&irresult.results)) {
+    irresult.type = IR_CODE;
+    dump_ir(irresult);
+    // save button info
+    sprintf(irresult.name, "#%d", count++);
+    bool save = true;
+    for (auto i = ir_codes.cbegin(); i != ir_codes.cend(); ++i) {
+      if (i->results.value == irresult.results.value) {
+        save = false;
+        Serial.println("Already!");
+      }
+    }
+    if (save) ir_codes.push_back(irresult);
+    irrecv.resume();
+    s_count = 0;
+  }
+  // 1 minute without input? save...
+  if (s_count > 60) {
+    Serial.println("Saving...");
+    codes_save();
+    s_count = 0;
+  }
 }
 
 #endif
